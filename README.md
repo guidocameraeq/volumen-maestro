@@ -99,7 +99,7 @@ Abrí **Volumen Maestro** desde "Your apps":
 - [`docs/arquitectura.md`](docs/arquitectura.md): procesos, motor, protocolo y flujo de un toque de volumen.
 - [`docs/temas.md`](docs/temas.md): el contrato de los temas y cómo agregar uno nuevo.
 - [`docs/desarrollo.md`](docs/desarrollo.md): entorno, compilar, firmar, instalar, depurar.
-- [`docs/decisiones.md`](docs/decisiones.md): las 10 decisiones de diseño (ADR).
+- [`docs/decisiones.md`](docs/decisiones.md): las 11 decisiones de diseño (ADR).
 - [`docs/specs/`](docs/specs/): la especificación aprobada.
 - [`docs/tv-guido-tcl/`](docs/tv-guido-tcl/): la historia completa de la TV para la que se hizo (limpieza, Alexa, audio) y cómo restaurar lo que se cambió.
 

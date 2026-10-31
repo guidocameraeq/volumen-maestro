@@ -29,6 +29,13 @@ class ConfigTest {
         assertEquals(Config().rebootDays, c.rebootDays)
     }
 
+    @Test fun migratesInfoShortcutFromVersion1() {
+        // En la v1 el atajo era KEYCODE_INFO (165); ahora es el código crudo del control (0xC3).
+        assertEquals(0xC3, Config.fromJson("""{"version":1,"shortcutKey":165}""").shortcutKey)
+        assertEquals(0, Config.fromJson("""{"version":1,"shortcutKey":166}""").shortcutKey)
+        assertEquals(0xC3, Config.fromJson("""{"version":2,"shortcutKey":195}""").shortcutKey)
+    }
+
     @Test fun parsesAudioFlingerFloat() {
         assertEquals(1f, MasterVolume.parseFloat("Result: Parcel(00000000 3f800000   '.......?')")!!, 0f)
         assertEquals(0.0961f, MasterVolume.parseFloat("Result: Parcel(00000000 3dc4d014   '.......=')")!!, 0.0001f)

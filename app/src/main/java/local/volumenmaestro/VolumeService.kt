@@ -1,19 +1,17 @@
 package local.volumenmaestro
 
 import android.accessibilityservice.AccessibilityService
-import android.view.KeyEvent
 import android.view.accessibility.AccessibilityEvent
 import local.volumenmaestro.engine.Engine
 
 /**
- * Servicio de accesibilidad: Android lo arranca con la TV y lo mantiene vivo.
- * Le da al motor lo que solo un servicio así puede tener: ventanas encima de todo y
- * acceso a las teclas del control (para el atajo). Conserva el nombre de la versión 1.
+ * Servicio de accesibilidad: Android lo arranca con la TV y lo mantiene vivo, y le da al motor
+ * ventanas encima de todo. No filtra teclas: con el filtro activo, Android deja de repetir las
+ * teclas mantenidas (el atajo del control se escucha con getevent, ver Engine).
+ * Conserva el nombre de la versión 1 para seguir habilitado al actualizar.
  */
 class VolumeService : AccessibilityService() {
     override fun onServiceConnected() = Engine.start(this)
-
-    override fun onKeyEvent(event: KeyEvent): Boolean = Engine.onKey(event)
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {}
 

@@ -9,7 +9,6 @@ import android.media.AudioManager
 import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
-import android.view.KeyEvent
 import local.volumenmaestro.AdbKeys
 import local.volumenmaestro.VolumeService
 import local.volumenmaestro.audio.AudioSetup
@@ -38,12 +37,6 @@ object Engine {
     private const val WATCHDOG_MS = 10_000L
     private const val LONG_PRESS_MS = 2_000L
     private const val LEARN_TIMEOUT_MS = 20_000L
-    private val NOT_ALLOWED = setOf(
-        KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_DPAD_DOWN, KeyEvent.KEYCODE_DPAD_LEFT,
-        KeyEvent.KEYCODE_DPAD_RIGHT, KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER,
-        KeyEvent.KEYCODE_BACK, KeyEvent.KEYCODE_HOME, KeyEvent.KEYCODE_POWER,
-        KeyEvent.KEYCODE_VOLUME_UP, KeyEvent.KEYCODE_VOLUME_DOWN, KeyEvent.KEYCODE_VOLUME_MUTE,
-    )
 
     val log = EventLog()
     val main = Handler(Looper.getMainLooper())
@@ -85,7 +78,6 @@ object Engine {
         private set
 
     private var shortcutDown = false
-    private var longFired = false
 
     // ---------------------------------------------------------------- ciclo de vida
 
@@ -138,9 +130,11 @@ object Engine {
             refreshHealth()
         }
         main.postDelayed(watchdog, WATCHDOG_MS)
+        startEventReader()
     }
 
     fun stop() {
+        eventsRunning = false
         main.removeCallbacks(watchdog)
         if (receiverRegistered) app.unregisterReceiver(receiver)
         receiverRegistered = false
@@ -455,68 +449,103 @@ object Engine {
 
     // ---------------------------------------------------------------- atajo del control
 
+    /*
+     * El atajo se escucha leyendo las señales crudas del control con `getevent` por ADB, en vez de
+     * con el filtro de teclas de accesibilidad: ese filtro hace que Android deje de repetir las
+     * teclas mantenidas (el volumen bajaba de a un paso). Las señales no se pueden "consumir":
+     * el botón sigue haciendo lo suyo, por eso conviene uno que no se use.
+     * Los códigos son los del kernel (Info en el TCL RC813 = 0xC3), no los KEYCODE de Android.
+     */
+
+    private val learnTimeout = Runnable { stopLearning() }
+    @Volatile private var eventsRunning = false
+
     fun startLearning() {
         learning = true
         learnedKey = 0
         rejectedKey = 0
-        main.postDelayed({ learning = false }, LEARN_TIMEOUT_MS)
+        main.removeCallbacks(learnTimeout)
+        main.postDelayed(learnTimeout, LEARN_TIMEOUT_MS)
     }
 
     fun stopLearning() {
         learning = false
+        main.removeCallbacks(learnTimeout)
     }
 
-    /** Llamado por el servicio para cada tecla. Devuelve true si la consume. */
-    fun onKey(event: KeyEvent): Boolean {
-        val code = event.keyCode
-        if (learning) {
-            if (code in NOT_ALLOWED) {
-                if (event.action == KeyEvent.ACTION_DOWN && code != KeyEvent.KEYCODE_DPAD_CENTER &&
-                    code != KeyEvent.KEYCODE_BACK && code !in DPAD
-                ) rejectedKey = code
-                return false
-            }
-            if (event.action == KeyEvent.ACTION_DOWN) {
-                learnedKey = code
-                learning = false
-                log.add("Botón detectado: ${KeyEvent.keyCodeToString(code)}")
-            }
-            return true
-        }
-        if (config.shortcutKey == 0 || code != config.shortcutKey) return false
-        when (config.shortcutMode) {
-            ShortcutMode.SINGLE_PRESS ->
-                if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) toggleFromShortcut()
-            ShortcutMode.LONG_PRESS -> when (event.action) {
-                KeyEvent.ACTION_DOWN -> if (event.repeatCount == 0) {
-                    shortcutDown = true
-                    longFired = false
-                    main.postDelayed(longPress, LONG_PRESS_MS)
-                }
-                KeyEvent.ACTION_UP -> {
-                    shortcutDown = false
-                    main.removeCallbacks(longPress)
-                    // Toque corto: se reenvía para que el botón haga lo de siempre.
-                    // Las teclas inyectadas no vuelven a pasar por este filtro.
-                    if (!longFired) commands.execute {
-                        try { shell.commands.run("input keyevent $code") } catch (_: IOException) { }
+    private fun startEventReader() {
+        eventsRunning = true
+        Thread({
+            while (eventsRunning) {
+                try {
+                    val client = shell.openStream()
+                    try {
+                        val pending = StringBuilder()
+                        client.stream("getevent") { text ->
+                            pending.append(text)
+                            while (true) {
+                                val nl = pending.indexOf("\n")
+                                if (nl < 0) break
+                                parseEvent(pending.substring(0, nl))
+                                pending.delete(0, nl + 1)
+                            }
+                        }
+                    } finally {
+                        client.close()
                     }
+                } catch (e: Exception) {
+                    if (eventsRunning) Thread.sleep(5_000)
                 }
             }
-        }
-        return true
+        }, "atajo-control").apply { isDaemon = true; start() }
     }
 
-    private val DPAD = setOf(
-        KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_DPAD_DOWN,
-        KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT,
+    /** Una línea de getevent: "/dev/input/event9: 0001 00c3 00000001" (tipo, código, valor). */
+    private fun parseEvent(line: String) {
+        val parts = line.substringAfter(": ", "").trim().split(Regex("\\s+"))
+        if (parts.size != 3 || parts[0] != "0001") return // solo EV_KEY
+        val code = parts[1].toIntOrNull(16) ?: return
+        val value = parts[2].toLongOrNull(16) ?: return
+        if (value == 2L) return // repetición del kernel
+        main.post { onRawKey(code, value == 1L) }
+    }
+
+    private fun onRawKey(code: Int, down: Boolean) {
+        if (learning) {
+            if (!down) return
+            if (code in RAW_NOT_ALLOWED) {
+                rejectedKey = code
+                return
+            }
+            learnedKey = code
+            stopLearning()
+            log.add("Botón detectado: 0x%02X".format(code))
+            return
+        }
+        if (config.shortcutKey == 0 || code != config.shortcutKey) return
+        when (config.shortcutMode) {
+            ShortcutMode.SINGLE_PRESS -> if (down) toggleFromShortcut()
+            ShortcutMode.LONG_PRESS -> if (down) {
+                shortcutDown = true
+                main.removeCallbacks(longPress)
+                main.postDelayed(longPress, LONG_PRESS_MS)
+            } else {
+                shortcutDown = false
+                main.removeCallbacks(longPress)
+            }
+        }
+    }
+
+    /** Teclas que no pueden ser atajo: volumen, encendido, flechas, OK, atrás e inicio. */
+    private val RAW_NOT_ALLOWED = setOf(
+        113, 114, 115, 116, // KEY_MUTE, VOLUMEDOWN, VOLUMEUP, POWER
+        103, 108, 105, 106, // flechas
+        28, 352, 353,       // ENTER, OK, SELECT
+        1, 158, 102, 172,   // ESC, BACK, HOME, HOMEPAGE
     )
 
     private val longPress = Runnable {
-        if (shortcutDown) {
-            longFired = true
-            toggleFromShortcut()
-        }
+        if (shortcutDown) toggleFromShortcut()
     }
 
     private fun toggleFromShortcut() = setEnabled(!enabled, "atajo del control")

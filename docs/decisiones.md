@@ -14,6 +14,7 @@ Cada decisión con alternativas: qué se eligió, qué se descartó y por qué. 
 | 008 | Actualizar siempre "encima": misma firma, mismo paquete y misma clase | 31/10/2026 |
 | 009 | Reinicio programado con `reboot:` de adbd y volver a apagar la pantalla | 31/10/2026 |
 | 010 | Copia de seguridad en `/sdcard` escrita por la shell | 31/10/2026 |
+| 011 | Atajo del control con `getevent` en vez del filtro de teclas | 31/10/2026 |
 
 ## ADR-001 — Volumen maestro en vez de efectos de audio
 - **Contexto**: la salida óptica es de volumen fijo; hacía falta una capa de volumen por software.
@@ -60,3 +61,9 @@ Cada decisión con alternativas: qué se eligió, qué se descartó y por qué. 
 ## ADR-010 — Copia de seguridad por la shell
 - **Contexto**: una app reinstalada no puede leer archivos que creó la instalación anterior.
 - **Elegido**: la copia (`/sdcard/VolumenMaestro/ajustes.json`) se escribe y se lee con la shell (base64 por ADB), así la versión nueva la encuentra y ofrece restaurarla.
+
+## ADR-011 — Atajo con `getevent`
+- **Contexto**: la 2.0 escuchaba el botón del atajo con el filtro de teclas de accesibilidad (`FLAG_REQUEST_FILTER_KEY_EVENTS`). Con ese filtro activo, Android **deja de repetir las teclas mantenidas**: mantener apretado el volumen bajaba de a un paso (medido: 3,2 s apretado = 1 solo cambio, `repeatCount` siempre 0). El control solo manda "apretado" y "soltado"; la repetición la genera Android, y se pierde cuando los eventos pasan por el filtro.
+- **Opciones**: prender el filtro solo con atajo configurado (sigue rompiendo la repetición en ese caso) · leer las señales crudas del control con `getevent` por ADB.
+- **Elegido**: `getevent` en una conexión ADB propia. Atajo y repetición funcionan juntos (verificado por Guido el 31/10). El atajo se guarda como código del kernel (Info = `0xC3`); la config pasó a versión 2 y migra el KEYCODE_INFO viejo.
+- **Costo**: la señal no se puede consumir: el botón del atajo igual hace su función normal en la TV.

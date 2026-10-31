@@ -30,9 +30,9 @@ flowchart LR
 
 | Pieza | Archivo | Qué hace |
 |---|---|---|
-| Servicio de accesibilidad | `VolumeService.kt` | Android lo arranca con la TV. Le da al motor ventanas encima de todo (`TYPE_ACCESSIBILITY_OVERLAY`) y las teclas del control (para el atajo). Mantiene el nombre de la v1 |
+| Servicio de accesibilidad | `VolumeService.kt` | Android lo arranca con la TV. Le da al motor ventanas encima de todo (`TYPE_ACCESSIBILITY_OVERLAY`). No filtra teclas. Mantiene el nombre de la v1 |
 | Motor | `engine/Engine.kt` | Singleton del proceso `:motor`. Escucha el volumen, aplica la curva, maneja los modos, los chequeos, el atajo, el reinicio y la copia |
-| Shell | `engine/Shell.kt` + `AdbClient.java` + `AdbKeys.java` | Cliente ADB mínimo propio contra el adbd de la TV, con su clave RSA. Dos canales: `volume` (rápido) y `commands` (tareas largas) |
+| Shell | `engine/Shell.kt` + `AdbClient.java` + `AdbKeys.java` | Cliente ADB mínimo propio contra el adbd de la TV, con su clave RSA. Canales: `volume` (rápido), `commands` (tareas largas) y una conexión de streaming para `getevent` (atajo) |
 | Volumen maestro | `audio/MasterVolume.kt` | Hilo propio que manda `setMasterVolume` con rampa en dB (pasos de 25 ms) y lo lee para el watchdog |
 | Curva | `audio/VolumeCurve.kt` | Índice → ganancia: Pareja (dB por punto), Suave (cuadrática), Ampli (curva en S de −60 dB). En 100 siempre 1.0 |
 | Modos | `audio/AudioSetup.kt` | Los ajustes de ENCENDIDO y APAGADO (tabla en `tv-guido-tcl/README.md`) |
@@ -62,7 +62,9 @@ Mensajes en `Protocol.kt`: `GET_STATE`, `SET_ENABLED`, `SET_CONFIG`, `REPAIR_ALL
 
 ## Atajo del control
 
-El servicio de accesibilidad pide filtrar teclas. Con "Elegir botón" el motor captura la próxima tecla permitida (no flechas, OK, Atrás, Home, Encendido ni volumen). En "Mantener 2 s", un toque corto se reenvía con `input keyevent` (las teclas inyectadas no vuelven a pasar por el filtro), así el botón conserva su función.
+El motor abre una tercera conexión ADB y deja corriendo `getevent`: lee las señales crudas del control (`tipo código valor`, por ejemplo `0001 00c3 00000001` = Info apretado) y reconoce el botón del atajo por su **código del kernel** (Info del TCL RC813 = `0xC3`). Con "Elegir botón" toma el próximo botón apretado que no sea volumen, encendido, flechas, OK, Atrás ni Inicio. "Mantener 2 s" mide entre apretado y soltado; "Toque simple" actúa al apretar.
+
+**No** se usa el filtro de teclas de accesibilidad: con ese filtro activo Android deja de repetir las teclas mantenidas y el volumen baja de a un paso (ver ADR-011). La contra es que la señal no se puede "consumir": el botón igual hace lo suyo en la TV.
 
 ## Pruebas
 

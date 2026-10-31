@@ -70,6 +70,11 @@ fun VolumeScreen(state: EngineState, client: EngineClient) {
                 ) { set(c.copy(transition = it)) }
                 Hint("Cuánto tarda el sonido en deslizarse al nivel nuevo.")
             }
+            Section("Mantener apretado") {
+                Text("✓ Mantener apretado el volumen sube o baja rápido: arranca despacio y acelera.",
+                    color = Palette.ok, fontSize = 16.sp)
+                Hint("La velocidad la maneja la TV; cuánto suena cada paso lo decide la curva de arriba.")
+            }
         }
         Column(Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState())) {
             Section("Curva", Modifier.fillMaxWidth()) {

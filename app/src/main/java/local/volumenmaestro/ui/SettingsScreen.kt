@@ -2,7 +2,6 @@ package local.volumenmaestro.ui
 
 import android.content.Intent
 import android.net.Uri
-import android.view.KeyEvent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -78,8 +77,9 @@ fun SettingsScreen(state: EngineState, client: EngineClient) {
                     c.shortcutMode,
                 ) { client.setConfig(c.copy(shortcutMode = it)) }
                 Hint(if (c.shortcutMode == ShortcutMode.LONG_PRESS)
-                    "El botón sigue haciendo lo de siempre; mantenerlo apretado prende o apaga Volumen Maestro."
-                else "El botón queda dedicado: cada toque prende o apaga Volumen Maestro.")
+                    "Mantenelo apretado 2 segundos para prender o apagar Volumen Maestro."
+                else "Cada toque prende o apaga Volumen Maestro.")
+                Hint("El botón igual hace lo suyo en la TV, así que conviene uno que no uses (por ejemplo Info).")
             }
             Section("Copia de seguridad") {
                 Hint("Cada cambio se guarda solo en /sdcard/VolumenMaestro. Si reinstalás la app, te ofrece restaurarla.")
@@ -124,20 +124,20 @@ fun SettingsScreen(state: EngineState, client: EngineClient) {
     }
 }
 
+/** Nombres de los códigos crudos del kernel (getevent). Info del TCL RC813 manda 0xC3. */
 private val KEY_NAMES = mapOf(
-    KeyEvent.KEYCODE_INFO to "Info",
-    KeyEvent.KEYCODE_CHANNEL_UP to "CH +",
-    KeyEvent.KEYCODE_CHANNEL_DOWN to "CH −",
-    KeyEvent.KEYCODE_GUIDE to "Guía",
-    KeyEvent.KEYCODE_TV to "TV",
-    KeyEvent.KEYCODE_TV_INPUT to "Entrada",
-    KeyEvent.KEYCODE_SETTINGS to "Ajustes",
-    KeyEvent.KEYCODE_MENU to "Menú",
-    KeyEvent.KEYCODE_PROG_RED to "Rojo",
-    KeyEvent.KEYCODE_PROG_GREEN to "Verde",
-    KeyEvent.KEYCODE_PROG_YELLOW to "Amarillo",
-    KeyEvent.KEYCODE_PROG_BLUE to "Azul",
+    0xC3 to "Info",
+    0x166 to "Info",
+    0x192 to "CH +",
+    0x193 to "CH −",
+    0x16D to "Guía",
+    0x179 to "TV",
+    0x182 to "Entrada",
+    0x8B to "Menú",
+    0x18E to "Rojo",
+    0x18F to "Verde",
+    0x190 to "Amarillo",
+    0x191 to "Azul",
 )
 
-fun keyName(code: Int): String = KEY_NAMES[code]
-    ?: KeyEvent.keyCodeToString(code).removePrefix("KEYCODE_").lowercase().replaceFirstChar { it.uppercase() }
+fun keyName(code: Int): String = KEY_NAMES[code] ?: "botón 0x%02X".format(code)

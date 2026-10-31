@@ -8,7 +8,6 @@
 - [ ] Activar el hook SessionStart y los permisos del proyecto: crear `.claude/settings.json` a partir de `docs/claude-settings.json` (el sistema de permisos no dejó que Claude lo creara solo).
 
 ## 🟠 Importante
-- [ ] Guido: probar el atajo del control con **CH** o **Info** (Ajustes → Elegir botón) y elegir "Mantener 2 s" o "Toque simple".
 - [ ] Guido: probar el volumen de oído en Plex, Disney+, Prime y HBO Max en modo ENCENDIDO. Si alguna no responde, revisar su camino de audio (`docs/audio-dolby.md`): puede seguir mandando Dolby por offload.
 - [ ] Probar un reinicio programado real (ponerlo 2-3 minutos adelante y apagar la TV con el control); confirmar que la pantalla no queda prendida después.
 

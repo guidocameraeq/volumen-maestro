@@ -56,6 +56,9 @@ class Shell(private val keys: () -> KeyPair?, private val onWaitingForUser: () -
     val volume = Channel("volumen")
     val commands = Channel("comandos")
 
+    /** Conexión aparte para un comando que no termina (getevent). La cierra quien la usa. */
+    fun openStream(): AdbClient = connect()
+
     val connected: Boolean get() = lastError == null && !waitingForUser
 
     private fun connect(): AdbClient {

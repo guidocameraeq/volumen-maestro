@@ -18,7 +18,8 @@ data class Config(
     val themeId: String = "clasico",
     val overlayDuration: OverlayDuration = OverlayDuration.NORMAL,
     val showSide: Boolean = true,
-    val shortcutKey: Int = 0, // 0 = sin atajo
+    /** Código crudo del kernel del botón del atajo (getevent; Info del TCL RC813 = 0xC3). 0 = sin atajo. */
+    val shortcutKey: Int = 0,
     val shortcutMode: ShortcutMode = ShortcutMode.LONG_PRESS,
     val rebootEnabled: Boolean = false,
     val rebootDays: Set<DayOfWeek> = setOf(DayOfWeek.MONDAY),
@@ -26,7 +27,7 @@ data class Config(
     val rebootMinute: Int = 0,
 ) {
     fun toJson(): String = JSONObject().apply {
-        put("version", 1)
+        put("version", VERSION)
         put("curve", curve.name)
         put("dbPerPoint", dbPerPoint.toDouble())
         put("zeroIsSilence", zeroIsSilence)
@@ -45,6 +46,17 @@ data class Config(
     companion object {
         const val MIN_DB_PER_POINT = 0.2f
         const val MAX_DB_PER_POINT = 1.0f
+        /** 2: shortcutKey pasó de KEYCODE de Android a código crudo del kernel. */
+        const val VERSION = 2
+        private const val ANDROID_KEYCODE_INFO = 165
+        private const val RAW_INFO_TCL = 0xC3
+
+        /** En la versión 1 el atajo era un KEYCODE de Android; solo Info tiene equivalente conocido. */
+        private fun migrateShortcut(version: Int, key: Int): Int = when {
+            version >= VERSION -> key
+            key == ANDROID_KEYCODE_INFO -> RAW_INFO_TCL
+            else -> 0
+        }
 
         /** Lee un JSON tolerando campos faltantes o valores viejos (copias de versiones anteriores). */
         fun fromJson(text: String): Config {
@@ -62,7 +74,7 @@ data class Config(
                 themeId = o.optString("themeId", d.themeId).ifEmpty { d.themeId },
                 overlayDuration = enumOrNull<OverlayDuration>(o.optString("overlayDuration")) ?: d.overlayDuration,
                 showSide = o.optBoolean("showSide", d.showSide),
-                shortcutKey = o.optInt("shortcutKey", d.shortcutKey),
+                shortcutKey = migrateShortcut(o.optInt("version", 1), o.optInt("shortcutKey", d.shortcutKey)),
                 shortcutMode = enumOrNull<ShortcutMode>(o.optString("shortcutMode")) ?: d.shortcutMode,
                 rebootEnabled = o.optBoolean("rebootEnabled", d.rebootEnabled),
                 rebootDays = days,

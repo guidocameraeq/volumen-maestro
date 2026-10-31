@@ -2,6 +2,15 @@
 
 > Historia permanente. `/cierre` agrega una entrada AL TOPE en cada sesión. Orden descendente estricto, sin excepciones. Nada de versiones duplicadas en otros docs.
 
+## 2026-10-31 — Volumen Maestro 2.1: vuelve la bajada progresiva
+
+### Fixed
+- Mantener apretado el volumen volvió a acelerar: el servicio de accesibilidad ya no filtra teclas (con el filtro, Android no repetía las teclas mantenidas).
+
+### Changed
+- El atajo del control se escucha con `getevent` (señales crudas del control) y se guarda como código del kernel; la config pasa a versión 2 y migra Info solo (ADR-011).
+- Pestaña Volumen: sección "Mantener apretado"; Ajustes: aviso de que el botón del atajo igual hace su función.
+
 ## 2026-10-31 — De la TV lenta a Volumen Maestro 2.0
 
 ### Added

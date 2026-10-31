@@ -126,6 +126,35 @@ public final class AdbClient implements Closeable {
         }
     }
 
+    /** Recibe la salida de un comando que no termina (por ejemplo getevent) a medida que llega. */
+    public interface StreamListener {
+        void onText(String text);
+    }
+
+    /**
+     * Corre un comando largo y le pasa la salida a [listener] hasta que el comando termina o se
+     * corta la conexión. Bloquea: usarlo en un hilo propio y con una conexión dedicada.
+     */
+    public void stream(String command, StreamListener listener) throws IOException {
+        socket.setSoTimeout(0); // puede pasar mucho tiempo sin salida
+        int local = nextLocalId++;
+        send(OPEN, local, 0, ("shell:" + command + "\0").getBytes(StandardCharsets.UTF_8));
+        int remote = 0;
+        while (true) {
+            Message m = read();
+            if (m.arg1 != local) continue;
+            if (m.command == OKAY) {
+                remote = m.arg0;
+            } else if (m.command == WRTE) {
+                send(OKAY, local, m.arg0, new byte[0]);
+                listener.onText(new String(m.data, StandardCharsets.UTF_8));
+            } else if (m.command == CLSE) {
+                if (remote != 0) send(CLSE, local, remote, new byte[0]);
+                return;
+            }
+        }
+    }
+
     /** Reinicia la TV con el servicio "reboot:" de adbd (lo mismo que hace "adb reboot"). */
     public synchronized void reboot() throws IOException {
         send(OPEN, nextLocalId++, 0, "reboot:\0".getBytes(StandardCharsets.UTF_8));

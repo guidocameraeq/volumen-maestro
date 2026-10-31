@@ -55,12 +55,13 @@ Los rituales viven en `.claude/skills/`: **`/inicio` · `/cierre` · `/instalar`
 
 ## Reglas operativas del stack
 
-1. **Teclas desde la PC**: `input keyevent` NO pasa por el servicio de accesibilidad (solo las teclas reales del control). Para simular volumen usar `cmd media_session volume --stream 3 --adj raise|lower`.
-2. **Capturas**: `screencap` sale negro sobre apps con DRM (Netflix) y no muestra lo que hay debajo del protector (Ambient). Para probar carteles, usar la pantalla de inicio o la propia app.
-3. **Navegar la TV con flechas desde la PC es frágil**: verificar con captura antes de apretar OK (ya se apagó la app sin querer una vez). Para elegir opciones en la app sirve `input tap x y`.
-4. **Netflix toma los ajustes de audio solo al arrancar**: después de cambiar `nrdp_*` hay que `am force-stop com.netflix.ninja`.
-5. **Temas sin estado**: cada `Theme` dibuja todo desde `OverlayState`, sin allocations ni `BlurMaskFilter` (ver `docs/temas.md`). La placa opaca tapa el cartel de TCL desde el primer cuadro.
-6. **Mensajes multi-tema del usuario** (dicta por voz): confirmar el orden de prioridad antes de ejecutar si no dijo "primero X".
+1. **Teclas desde la PC**: `input keyevent` no sirve para probar el volumen ni el atajo. Para simular volumen usar `cmd media_session volume --stream 3 --adj raise|lower`; el atajo solo se prueba con el control real.
+2. **Nunca prender el filtro de teclas de accesibilidad** (`flagRequestFilterKeyEvents`): con él Android deja de repetir las teclas mantenidas y el volumen baja de a un paso. El control se escucha con `getevent` (ADR-011).
+3. **Capturas**: `screencap` sale negro sobre apps con DRM (Netflix) y no muestra lo que hay debajo del protector (Ambient). Para probar carteles, usar la pantalla de inicio o la propia app.
+4. **Navegar la TV con flechas desde la PC es frágil**: verificar con captura antes de apretar OK (ya se apagó la app sin querer una vez). Para elegir opciones en la app sirve `input tap x y`.
+5. **Netflix toma los ajustes de audio solo al arrancar**: después de cambiar `nrdp_*` hay que `am force-stop com.netflix.ninja`.
+6. **Temas sin estado**: cada `Theme` dibuja todo desde `OverlayState`, sin allocations ni `BlurMaskFilter` (ver `docs/temas.md`). La placa opaca tapa el cartel de TCL desde el primer cuadro.
+7. **Mensajes multi-tema del usuario** (dicta por voz): confirmar el orden de prioridad antes de ejecutar si no dijo "primero X".
 
 ## Mapa de documentación
 
