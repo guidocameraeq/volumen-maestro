@@ -1,0 +1,28 @@
+Orden de "Your apps" en Google TV (31/10/2026, antes de tocar el inicio)
+
+1. Netflix
+2. YouTube
+3. Crunchyroll
+4. HBO Max
+5. Plex
+6. Jellyfin
+7. Disney+
+8. Prime Video
+9. MUBI
+10. Spotify
+11. YouTube Music
+12. Quick Panel        (com.tcl.suspension)
+13. TV                 (com.tcl.tv)
+14. TCL Home           (com.tcl.partnercustomizer)
+15. Safety Guard       (com.tcl.guard)
+16. Media Player       (com.tcl.ui_mediaCenter)
+17. Downloader
+18. Twitch
+19. MXL TV
+20. Works with Alexa   (com.tcl.smartalexa)
+21. Paramount+
+22. Kick
+23. Saki Play
+
+Protector de pantalla: Ambient (com.google.android.apps.tv.dreamx/.service.Backdrop), activado.
+Capturas: guardadas solo en la PC (.local-privado/), no en el repo: muestran la foto de perfil.

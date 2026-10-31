@@ -1,0 +1,4 @@
+﻿Valores originales de audio de Netflix (31/10/2026), antes del cambio:
+nrdp_audio_platform_capabilities={"audiocaps":{"continuousAudio":true,"aaudio":true,"aacLatencyCompensation":0,"uiAudioBufferDelayOffset":70,"pcm":{"mixing":true,"transition":"ease","bufSize":8192},"ddplus":{"enabled":true,"mixing":true,"transition":"ease","bufSize":13824},"atmos":{"enabled":true,"mixing":true,"transition":"ease","bufSize":21504,"virtualization":true}}}
+nrdp_external_surround_sound_enabled=1
+encoded_surround_output=null (Auto)

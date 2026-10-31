@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Volumen Maestro</title>
+<meta name="description" content="App para Android TV: el control de la TV vuelve a manejar el volumen de un equipo de audio conectado por fibra óptica. 12 temas animados.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0d14; --bg2: #11131d; --card: #161a26; --line: #262b3b;
+    --text: #f2f3f7; --dim: #a3a9b8; --red: #ff2d2d; --violet: #8b5cf6; --cyan: #22d3ee;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.6 Inter, system-ui, sans-serif; }
+  a { color: var(--cyan); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+
+  /* Hero */
+  .hero { position: relative; overflow: hidden; padding: 96px 0 72px;
+    background: radial-gradient(800px 300px at 80% 0%, rgba(139,92,246,.25), transparent 70%),
+                radial-gradient(900px 260px at 40% 100%, rgba(255,45,45,.22), transparent 70%), var(--bg); }
+  .hero h1 { font: 800 clamp(44px, 8vw, 84px)/1 Inter, sans-serif; letter-spacing: -2px; margin: 0 0 16px; }
+  .hero p.lead { font-size: clamp(18px, 2.4vw, 23px); color: var(--dim); max-width: 760px; margin: 0 0 32px; }
+  .cta { display: flex; gap: 14px; flex-wrap: wrap; }
+  .btn { display: inline-block; padding: 13px 24px; border-radius: 999px; font-weight: 700; color: var(--text);
+    background: var(--card); border: 1px solid var(--line); }
+  .btn.primary { background: linear-gradient(90deg, #b91c1c, var(--red)); border: 0; box-shadow: 0 0 30px rgba(255,45,45,.35); }
+  .btn:hover { text-decoration: none; filter: brightness(1.12); }
+
+  /* El sable del hero: la hoja es el volumen */
+  .saber { position: relative; height: 70px; margin: 56px 0 8px; display: flex; align-items: center; }
+  .hilt { width: 120px; height: 26px; border-radius: 6px; flex: none;
+    background: linear-gradient(#e2e6ee, #7c828f 50%, #353a45);
+    box-shadow: inset 14px 0 0 -8px #2b2f38, inset 28px 0 0 -8px #2b2f38, inset 42px 0 0 -8px #2b2f38; position: relative; }
+  .hilt::after { content: ""; position: absolute; right: 22px; top: 8px; width: 10px; height: 10px; border-radius: 50%;
+    background: var(--red); box-shadow: 0 0 10px var(--red); }
+  .blade { height: 9px; border-radius: 0 9px 9px 0; background: #fff4f4; width: 0;
+    box-shadow: 0 0 6px #fff, 0 0 14px #ff4545, 0 0 30px #ff2020, 0 0 60px rgba(255,20,20,.7);
+    animation: ignite 1.1s .4s cubic-bezier(.2,.9,.2,1) forwards, flicker .09s 1.6s infinite alternate, vol 7s 2s ease-in-out infinite; }
+  .num { margin-left: 22px; font: 700 46px/1 Rajdhani, sans-serif; text-shadow: 0 0 18px rgba(255,45,45,.8); min-width: 64px; }
+  @keyframes ignite { to { width: min(62vw, 720px); } }
+  @keyframes flicker { from { opacity: 1; } to { opacity: .9; } }
+  @keyframes vol { 0%,100% { width: min(62vw, 720px); } 40% { width: min(30vw, 340px); } 60% { width: min(45vw, 520px); } }
+  @media (prefers-reduced-motion: reduce) { .blade { animation: none; width: min(62vw, 720px); } }
+
+  section { padding: 72px 0; border-top: 1px solid var(--line); }
+  section:nth-of-type(even) { background: var(--bg2); }
+  h2 { font: 800 clamp(28px, 4vw, 40px)/1.15 Inter, sans-serif; letter-spacing: -1px; margin: 0 0 16px; }
+  h3 { margin: 0 0 6px; font-size: 19px; }
+  .sub { color: var(--dim); max-width: 760px; margin: 0 0 36px; }
+  .grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 22px; }
+  .card p { margin: 0; color: var(--dim); font-size: 15px; }
+  .icon { font-size: 26px; margin-bottom: 8px; }
+  .steps { counter-reset: s; display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+  .steps .card::before { counter-increment: s; content: counter(s); display: inline-grid; place-items: center;
+    width: 34px; height: 34px; border-radius: 50%; margin-bottom: 10px; font-weight: 800;
+    background: linear-gradient(135deg, var(--violet), var(--cyan)); color: #0b0d14; }
+  figure { margin: 0; }
+  figure img { width: 100%; border-radius: 16px; border: 1px solid var(--line); display: block; }
+  figcaption { color: var(--dim); font-size: 14px; margin-top: 10px; text-align: center; }
+  .shots { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-top: 28px; }
+  .warn { border-left: 4px solid var(--red); }
+  code { background: #0f1220; border: 1px solid var(--line); padding: 2px 7px; border-radius: 6px; font-size: 14px; }
+  ol.install { padding-left: 22px; } ol.install li { margin: 6px 0; }
+  footer { padding: 40px 0; color: var(--dim); font-size: 14px; border-top: 1px solid var(--line); }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <h1>Volumen Maestro</h1>
+    <p class="lead">El control de tu TV vuelve a manejar el volumen del equipo de audio, aunque esté conectado por fibra óptica. Para Android TV / Google TV, con 12 temas animados.</p>
+    <div class="cta">
+      <a class="btn primary" href="mockups/temas.html">Probá los temas en vivo</a>
+      <a class="btn" href="https://github.com/guidocameraeq/volumen-maestro">Ver en GitHub</a>
+      <a class="btn" href="https://github.com/guidocameraeq/volumen-maestro/releases">Descargar</a>
+    </div>
+    <div class="saber" aria-hidden="true"><div class="hilt"></div><div class="blade"></div><div class="num">72</div></div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <h2>El problema</h2>
+    <p class="sub">Conectaste un equipo de audio a la TV por fibra óptica. La TV deja esa salida a volumen fijo: los botones de volumen no hacen nada y aparece <em>"Audio output through optical fibers does not support volume adjustment"</em>. Tenés que usar el control del equipo. Si además el equipo es viejo y no tiene HDMI ARC, no hay forma de que la TV lo maneje.</p>
+    <div class="grid">
+      <div class="card"><div class="icon">🎚️</div><h3>Volumen con el control de la TV</h3><p>En todas las apps: YouTube, Netflix, Spotify… También responde a Alexa.</p></div>
+      <div class="card"><div class="icon">🧠</div><h3>Como un Chromecast</h3><p>El equipo queda fijo en un volumen alto y la TV baja su propia señal, justo antes de la salida.</p></div>
+      <div class="card"><div class="icon">⚔️</div><h3>12 temas animados</h3><p>Los carteles de la TV quedan tapados por los tuyos: sable láser, neón, medieval, arcade, steampunk y más.</p></div>
+      <div class="card"><div class="icon">🧹</div><h3>TV más liviana</h3><p>Optimizar con un botón y reinicio programado por días y hora.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Cómo funciona</h2>
+    <p class="sub">Sin root y sin hardware extra.</p>
+    <div class="steps">
+      <div class="card"><h3>La TV guarda el número</h3><p>Aunque diga "no soportado", la TV anota el volumen cada vez que tocás el control.</p></div>
+      <div class="card"><h3>La app lo traduce</h3><p>Con tu curva (dB por punto, suave o tipo amplificador) lo convierte en el volumen maestro de Android, que se aplica a todo el audio.</p></div>
+      <div class="card"><h3>Permisos desde adentro</h3><p>La app se conecta a la depuración de la propia TV con su clave, autorizada una vez. Sobrevive a los reinicios.</p></div>
+      <div class="card"><h3>Tus carteles encima</h3><p>Dos ventanas opacas tapan los avisos de la TV con el tema que elegiste.</p></div>
+    </div>
+    <div class="card warn" style="margin-top:22px">
+      <h3>El precio: sin Dolby</h3>
+      <p>El Dolby viaja comprimido hasta el equipo y ningún software lo puede bajar. Con la app encendida todo sale en PCM estéreo. Para una película con sonido envolvente, la apagás con un botón y la TV queda como venía.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Los temas, en la TV real</h2>
+    <p class="sub">Capturados en la TV donde se hizo la app. Cada tema dibuja el panel de abajo y el cartel lateral. <a href="mockups/temas.html">Probalos animados</a>.</p>
+    <figure><img src="assets/cartel-sable.png" alt="El cartel con el tema Sable láser rojo sobre la pantalla de inicio"><figcaption>Sable láser rojo: la hoja es el volumen.</figcaption></figure>
+    <figure style="margin-top:22px"><img src="assets/temas-en-la-tv.png" alt="Los 11 temas capturados en la TV"><figcaption>Los 11 temas: panel inferior arriba, cartel lateral abajo.</figcaption></figure>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>La app</h2>
+    <p class="sub">Cinco pestañas que se manejan con el control.</p>
+    <div class="shots">
+      <figure><img src="assets/app-inicio.png" alt="Pestaña Inicio"><figcaption>Inicio: interruptor y estado</figcaption></figure>
+      <figure><img src="assets/app-volumen.png" alt="Pestaña Volumen"><figcaption>Volumen: la curva</figcaption></figure>
+      <figure><img src="assets/app-temas.png" alt="Pestaña Temas"><figcaption>Temas: elegir y probar</figcaption></figure>
+      <figure><img src="assets/app-optimizar.png" alt="Pestaña Optimizar"><figcaption>Optimizar y reinicio programado</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Instalación</h2>
+    <ol class="install">
+      <li>En la TV, activá <b>USB debugging</b> (Settings → System → Developer options).</li>
+      <li>Descargá el APK de <a href="https://github.com/guidocameraeq/volumen-maestro/releases">Releases</a> e instalalo: <code>adb install volumen-maestro.apk</code>.</li>
+      <li>Activá el servicio en Settings → System → Accessibility → <b>Volumen Maestro</b>.</li>
+      <li>Aceptá el cartel <b>"Allow USB debugging?"</b> que aparece en la TV.</li>
+      <li>Poné <b>Audio Output: Optical</b> y subí el equipo de audio a un volumen alto fijo.</li>
+    </ol>
+    <p class="sub" style="margin-top:20px">Hecha y probada en una TCL Google TV (Android TV 12) con un receptor Sony por fibra. Detalles y compatibilidad en el <a href="https://github.com/guidocameraeq/volumen-maestro#readme">README</a>.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">Volumen Maestro · MIT · hecho por <a href="https://github.com/guidocameraeq">@guidocameraeq</a> con Claude Code. El tema "Sable láser rojo" es un diseño genérico, sin relación con ninguna franquicia.</div>
+</footer>
+</body>
+</html>

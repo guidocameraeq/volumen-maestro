@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="400" viewBox="0 0 1280 400">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b0f1a"/>
+      <stop offset="0.55" stop-color="#120c1f"/>
+      <stop offset="1" stop-color="#1d0a12"/>
+    </linearGradient>
+    <radialGradient id="glowR" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ff2a2a" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#ff2a2a" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowV" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#8b5cf6" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="hilt" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#d9dde6"/>
+      <stop offset="0.5" stop-color="#7c828f"/>
+      <stop offset="1" stop-color="#3a3f4a"/>
+    </linearGradient>
+    <linearGradient id="bar" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#22d3ee"/>
+      <stop offset="0.6" stop-color="#8b5cf6"/>
+      <stop offset="1" stop-color="#ec4899"/>
+    </linearGradient>
+  </defs>
+  <rect width="1280" height="400" fill="url(#bg)"/>
+  <ellipse cx="1040" cy="90" rx="380" ry="200" fill="url(#glowV)"/>
+  <ellipse cx="690" cy="300" rx="520" ry="90" fill="url(#glowR)"/>
+
+  <!-- sable: la hoja es el volumen -->
+  <g>
+    <rect x="200" y="288" width="120" height="26" rx="6" fill="url(#hilt)"/>
+    <rect x="214" y="292" width="6" height="18" fill="#2b2f38"/>
+    <rect x="228" y="292" width="6" height="18" fill="#2b2f38"/>
+    <rect x="242" y="292" width="6" height="18" fill="#2b2f38"/>
+    <circle cx="290" cy="301" r="5" fill="#ff3b3b"/>
+    <rect x="318" y="284" width="14" height="34" rx="3" fill="#9aa1ad"/>
+    <line x1="334" y1="301" x2="1090" y2="301" stroke="#ff1a1a" stroke-opacity="0.18" stroke-width="40" stroke-linecap="round"/>
+    <line x1="334" y1="301" x2="1090" y2="301" stroke="#ff2020" stroke-opacity="0.35" stroke-width="22" stroke-linecap="round"/>
+    <line x1="334" y1="301" x2="1090" y2="301" stroke="#ff4040" stroke-opacity="0.8" stroke-width="11" stroke-linecap="round"/>
+    <line x1="334" y1="301" x2="1090" y2="301" stroke="#fff4f4" stroke-width="4" stroke-linecap="round"/>
+  </g>
+
+  <!-- marcas de volumen -->
+  <g fill="#ffffff" fill-opacity="0.18">
+    <rect x="360" y="336" width="2" height="10"/><rect x="460" y="336" width="2" height="10"/>
+    <rect x="560" y="336" width="2" height="10"/><rect x="660" y="336" width="2" height="10"/>
+    <rect x="760" y="336" width="2" height="10"/><rect x="860" y="336" width="2" height="10"/>
+    <rect x="960" y="336" width="2" height="10"/><rect x="1060" y="336" width="2" height="10"/>
+  </g>
+
+  <text x="200" y="150" font-family="Segoe UI, Roboto, Helvetica, Arial, sans-serif" font-size="78" font-weight="800" fill="#f5f6fa" letter-spacing="-1">Volumen Maestro</text>
+  <text x="203" y="200" font-family="Segoe UI, Roboto, Helvetica, Arial, sans-serif" font-size="26" fill="#b8bdcc">El control de tu TV vuelve a manejar el volumen del equipo de audio</text>
+  <rect x="203" y="226" width="300" height="5" rx="2.5" fill="url(#bar)"/>
+  <text x="203" y="262" font-family="Segoe UI, Roboto, Helvetica, Arial, sans-serif" font-size="18" fill="#8b90a0">Android TV · fibra óptica · 12 temas animados · Kotlin + Compose for TV</text>
+
+  <text x="1120" y="312" font-family="Segoe UI, Roboto, Helvetica, Arial, sans-serif" font-size="44" font-weight="700" fill="#ffffff">72</text>
+</svg>

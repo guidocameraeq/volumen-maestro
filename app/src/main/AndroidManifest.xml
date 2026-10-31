@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Conexión ADB local (127.0.0.1:5555) para los comandos con permisos de shell. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Reinicio programado; el permiso se concede por ADB con appops. -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <uses-feature android:name="android.software.leanback" android:required="false" />
+    <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+
+    <application
+        android:label="Volumen Maestro"
+        android:icon="@drawable/icon"
+        android:banner="@drawable/banner"
+        android:theme="@android:style/Theme.DeviceDefault.NoActionBar"
+        android:allowBackup="false">
+
+        <activity
+            android:name=".ui.MainActivity"
+            android:exported="true"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- El motor vive en su propio proceso, liviano y sin Compose. El servicio conserva
+             el nombre de la versión 1 para que siga habilitado después de actualizar. -->
+        <service
+            android:name=".VolumeService"
+            android:exported="true"
+            android:label="Volumen Maestro"
+            android:process=":motor"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility" />
+        </service>
+
+        <service
+            android:name=".engine.EngineService"
+            android:exported="false"
+            android:process=":motor" />
+
+        <receiver
+            android:name=".system.RebootReceiver"
+            android:exported="false"
+            android:process=":motor" />
+    </application>
+</manifest>

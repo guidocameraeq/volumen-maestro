@@ -1,0 +1,23 @@
+# Gradle / Android
+.gradle/
+build/
+app/build/
+local.properties
+*.apk
+*.aab
+.idea/
+*.iml
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Clave de firma: queda solo en esta PC (ver docs/desarrollo.md). Sin ella no se puede
+# actualizar la app instalada sin desinstalarla.
+keystore.jks
+*.jks
+
+# Capturas personales del inicio de la TV y otros archivos privados
+.local-privado/
+
+# Claude Code: ajustes personales de esta máquina
+.claude/settings.local.json

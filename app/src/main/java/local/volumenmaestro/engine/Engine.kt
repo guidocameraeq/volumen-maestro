@@ -1,0 +1,545 @@
+package local.volumenmaestro.engine
+
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.content.SharedPreferences
+import android.media.AudioManager
+import android.os.Handler
+import android.os.Looper
+import android.os.PowerManager
+import android.view.KeyEvent
+import local.volumenmaestro.AdbKeys
+import local.volumenmaestro.VolumeService
+import local.volumenmaestro.audio.AudioSetup
+import local.volumenmaestro.audio.MasterVolume
+import local.volumenmaestro.audio.VolumeCurve
+import local.volumenmaestro.overlay.OverlayController
+import local.volumenmaestro.overlay.ThemeRegistry
+import local.volumenmaestro.settings.Config
+import local.volumenmaestro.settings.ConfigStore
+import local.volumenmaestro.settings.ShortcutMode
+import local.volumenmaestro.system.Optimizer
+import local.volumenmaestro.system.RebootScheduler
+import java.io.File
+import java.io.IOException
+import java.security.KeyPair
+import java.util.concurrent.Executors
+import kotlin.math.abs
+
+/**
+ * El motor: vive en el proceso :motor mientras el servicio de accesibilidad está activo.
+ * El hilo principal maneja los carteles y las teclas; [commands] corre los comandos lentos.
+ */
+object Engine {
+    private const val VOLUME_CHANGED = "android.media.VOLUME_CHANGED_ACTION"
+    private const val MUTE_CHANGED = "android.media.STREAM_MUTE_CHANGED_ACTION"
+    private const val WATCHDOG_MS = 10_000L
+    private const val LONG_PRESS_MS = 2_000L
+    private const val LEARN_TIMEOUT_MS = 20_000L
+    private val NOT_ALLOWED = setOf(
+        KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_DPAD_DOWN, KeyEvent.KEYCODE_DPAD_LEFT,
+        KeyEvent.KEYCODE_DPAD_RIGHT, KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER,
+        KeyEvent.KEYCODE_BACK, KeyEvent.KEYCODE_HOME, KeyEvent.KEYCODE_POWER,
+        KeyEvent.KEYCODE_VOLUME_UP, KeyEvent.KEYCODE_VOLUME_DOWN, KeyEvent.KEYCODE_VOLUME_MUTE,
+    )
+
+    val log = EventLog()
+    val main = Handler(Looper.getMainLooper())
+    val commands = Executors.newSingleThreadExecutor()
+
+    @Volatile var service: VolumeService? = null
+        private set
+    val running: Boolean get() = service != null
+
+    private lateinit var app: Context
+    private lateinit var prefs: SharedPreferences
+    private lateinit var store: ConfigStore
+    private lateinit var audio: AudioManager
+    lateinit var shell: Shell
+        private set
+    private lateinit var master: MasterVolume
+    private var overlay: OverlayController? = null
+    @Volatile private var keys: KeyPair? = null
+    private var receiverRegistered = false
+
+    @Volatile var config = Config()
+        private set
+    @Volatile var enabled = true
+        private set
+    @Volatile var status = "Iniciando"
+        private set
+    @Volatile var incompatible = false
+        private set
+    @Volatile var health: List<HealthCheck> = emptyList()
+        private set
+    @Volatile var backupFound: Config? = null
+        private set
+
+    @Volatile var learning = false
+        private set
+    @Volatile var learnedKey = 0
+        private set
+    @Volatile var rejectedKey = 0
+        private set
+
+    private var shortcutDown = false
+    private var longFired = false
+
+    // ---------------------------------------------------------------- ciclo de vida
+
+    fun start(s: VolumeService) {
+        service = s
+        app = s.applicationContext
+        prefs = app.getSharedPreferences("volumen", Context.MODE_PRIVATE)
+        store = ConfigStore(app)
+        config = store.load()
+        audio = app.getSystemService(AudioManager::class.java)
+        shell = Shell({ keys }) {
+            status = "Aceptá \"Permitir depuración\" en la TV"
+            main.post { overlay?.showMessage("Volumen Maestro: aceptá el permiso de depuración") }
+        }
+        master = MasterVolume(shell.volume)
+        overlay = OverlayController(s)
+        applyOverlayConfig()
+        enabled = true
+
+        app.registerReceiver(receiver, IntentFilter().apply {
+            addAction(VOLUME_CHANGED)
+            addAction(MUTE_CHANGED)
+            addAction(Intent.ACTION_SCREEN_ON)
+        })
+        receiverRegistered = true
+
+        commands.execute {
+            try {
+                keys = AdbKeys.load(app)
+            } catch (e: Exception) {
+                status = "No se pudieron crear las claves: $e"
+                log.add(status)
+                return@execute
+            }
+            log.add("Motor iniciado")
+            try {
+                if (!store.exists) backupFound = store.readBackup(shell.commands)
+                shell.commands.run("appops set ${app.packageName} SCHEDULE_EXACT_ALARM allow")
+                incompatible = master.read() == null
+                if (incompatible) log.add("El volumen maestro no responde: TV incompatible")
+                handleRebootMarker()
+                AudioSetup.enable(shell.commands, prefs, restartNetflix = false)
+                status = "Conectado"
+            } catch (e: IOException) {
+                status = "Sin conexión: ${e.message}"
+                log.add(status)
+            }
+            applyVolume(0)
+            RebootScheduler.schedule(app, config)
+            refreshHealth()
+        }
+        main.postDelayed(watchdog, WATCHDOG_MS)
+    }
+
+    fun stop() {
+        main.removeCallbacks(watchdog)
+        if (receiverRegistered) app.unregisterReceiver(receiver)
+        receiverRegistered = false
+        overlay?.release()
+        overlay = null
+        master.stop()
+        commands.execute { shell.close() }
+        service = null
+    }
+
+    private val receiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            when (intent.action) {
+                Intent.ACTION_SCREEN_ON -> onScreenOn()
+                else -> {
+                    val stream = intent.getIntExtra("android.media.EXTRA_VOLUME_STREAM_TYPE", -1)
+                    if (stream == AudioManager.STREAM_MUSIC) onTvVolumeChanged()
+                }
+            }
+        }
+    }
+
+    private var lastIndex = -1
+    private var lastMuted = false
+
+    private fun onTvVolumeChanged() {
+        if (!enabled) return
+        val i = index()
+        val m = muted()
+        if (i == lastIndex && m == lastMuted) return
+        lastIndex = i
+        lastMuted = m
+        overlay?.showVolume(i, maxIndex(), m)
+        applyVolume(config.transition.millis)
+    }
+
+    /** Al prender la TV siempre queda ENCENDIDO, y se reafirman los ajustes por si TCL los cambió. */
+    private fun onScreenOn() {
+        if (!enabled) {
+            setEnabled(true, "al prender la TV")
+            return
+        }
+        commands.execute {
+            try {
+                AudioSetup.enable(shell.commands, prefs, restartNetflix = false)
+            } catch (e: IOException) {
+                log.add("No se pudieron revisar los ajustes al prender: ${e.message}")
+            }
+            master.reapply()
+        }
+    }
+
+    private val watchdog = object : Runnable {
+        override fun run() {
+            commands.execute {
+                if (!enabled || incompatible) return@execute
+                val real = master.read() ?: return@execute
+                if (abs(real - expectedGain()) > 0.0005f) {
+                    log.add("El volumen maestro cambió a $real, lo vuelvo a aplicar")
+                    master.reapply()
+                }
+            }
+            main.postDelayed(this, WATCHDOG_MS)
+        }
+    }
+
+    // ---------------------------------------------------------------- volumen
+
+    fun index() = audio.getStreamVolume(AudioManager.STREAM_MUSIC)
+    fun maxIndex() = audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+    fun muted() = audio.isStreamMute(AudioManager.STREAM_MUSIC)
+
+    private fun expectedGain() = VolumeCurve.gain(index(), maxIndex(), muted(), config)
+
+    private fun applyVolume(rampMillis: Int) {
+        if (!enabled || incompatible) return
+        master.setTarget(expectedGain(), rampMillis)
+    }
+
+    // ---------------------------------------------------------------- modos
+
+    fun setEnabled(on: Boolean, reason: String) {
+        enabled = on
+        main.post {
+            overlay?.showMessage(if (on) "Volumen Maestro: ENCENDIDO" else "Volumen Maestro: APAGADO · Dolby activado")
+        }
+        status = if (on) "Activando…" else "Desactivando…"
+        commands.execute {
+            try {
+                if (on) {
+                    AudioSetup.enable(shell.commands, prefs, restartNetflix = true)
+                    applyVolume(0)
+                } else {
+                    AudioSetup.disable(shell.commands, prefs)
+                    master.setTarget(1f, 0)
+                }
+                status = if (on) "Conectado" else "Apagado: la TV está como venía"
+                log.add("Modo ${if (on) "ENCENDIDO" else "APAGADO"} ($reason)")
+            } catch (e: IOException) {
+                status = "No se pudo cambiar el modo: ${e.message}"
+                log.add(status)
+            }
+            refreshHealth()
+        }
+    }
+
+    // ---------------------------------------------------------------- configuración
+
+    fun updateConfig(newConfig: Config) {
+        val old = config
+        config = newConfig
+        store.save(newConfig)
+        main.post { applyOverlayConfig() }
+        if (old.curve != newConfig.curve || old.dbPerPoint != newConfig.dbPerPoint ||
+            old.zeroIsSilence != newConfig.zeroIsSilence
+        ) applyVolume(newConfig.transition.millis)
+        if (old.rebootEnabled != newConfig.rebootEnabled || old.rebootDays != newConfig.rebootDays ||
+            old.rebootHour != newConfig.rebootHour || old.rebootMinute != newConfig.rebootMinute
+        ) {
+            RebootScheduler.schedule(app, newConfig)
+            log.add(if (newConfig.rebootEnabled) "Reinicio programado actualizado" else "Reinicio programado apagado")
+        }
+        commands.execute {
+            try {
+                store.writeBackup(shell.commands, newConfig)
+            } catch (e: IOException) {
+                log.add("No se pudo guardar la copia de seguridad: ${e.message}")
+            }
+        }
+    }
+
+    private fun applyOverlayConfig() {
+        overlay?.apply {
+            theme = ThemeRegistry.byId(config.themeId)
+            showSide = config.showSide
+            durationMs = config.overlayDuration.millis
+        }
+    }
+
+    fun restoreBackup() {
+        backupFound?.let {
+            backupFound = null
+            updateConfig(it)
+            log.add("Ajustes restaurados de la copia de seguridad")
+        }
+    }
+
+    fun dismissBackup() {
+        backupFound = null
+        store.save(config)
+    }
+
+    fun exportBackup(): Boolean = try {
+        store.writeBackup(shell.commands, config)
+        log.add("Copia de seguridad exportada")
+        true
+    } catch (e: IOException) {
+        false
+    }
+
+    fun importBackup(): Boolean {
+        val c = store.readBackup(shell.commands) ?: return false
+        updateConfig(c)
+        log.add("Copia de seguridad importada")
+        return true
+    }
+
+    fun previewTheme(id: String) {
+        main.post {
+            val o = overlay ?: return@post
+            val saved = o.theme
+            o.theme = ThemeRegistry.byId(id)
+            o.showVolume(index(), maxIndex(), muted())
+            main.postDelayed({ if (o.theme.id == id) o.theme = ThemeRegistry.byId(config.themeId) }, config.overlayDuration.millis + 400)
+            if (saved.id == id) return@post
+        }
+    }
+
+    // ---------------------------------------------------------------- chequeos
+
+    fun refreshHealth() {
+        val list = mutableListOf<HealthCheck>()
+        val sh = shell.commands
+        fun read(cmd: String) = try { sh.run(cmd).trim() } catch (e: IOException) { null }
+
+        val connected = read("echo ok") == "ok"
+        list += if (connected) HealthCheck("adb", "Conexión interna", Level.OK, "La app puede cambiar ajustes de la TV.")
+        else HealthCheck("adb", "Conexión interna", Level.ERROR,
+            if (shell.waitingForUser) "Aceptá \"Permitir depuración\" en la TV." else "No se pudo conectar: ${shell.lastError ?: "?"}",
+            "Reintentar")
+        if (!connected) {
+            health = list
+            return
+        }
+        list += if (read("settings get global adb_enabled") == "1")
+            HealthCheck("debug", "Depuración USB", Level.OK, "Activada.")
+        else HealthCheck("debug", "Depuración USB", Level.ERROR,
+            "Está apagada: la app no puede funcionar. Activala en Settings → System → Developer options.")
+        list += if (read("settings get global tcl_device_out_type") == AudioSetup.OUT_TYPE_OPTICAL.toString())
+            HealthCheck("optical", "Salida de audio", Level.OK, "Optical: el sonido sale solo por el equipo.")
+        else HealthCheck("optical", "Salida de audio", Level.WARN,
+            "No está en \"Optical\". Cambiala en Display & Sound → Audio Output Settings → Audio Output.",
+            "Abrir ajustes de audio")
+        val spdif = read("settings get system tcl_sys_audio_spdif_outmode")
+        val wantSpdif = if (enabled) AudioSetup.SPDIF_PCM else AudioSetup.SPDIF_AUTO
+        list += if (spdif == wantSpdif.toString())
+            HealthCheck("spdif", "Salida digital", Level.OK, if (enabled) "PCM: todo pasa por el volumen." else "Auto: el Dolby pasa al equipo.")
+        else HealthCheck("spdif", "Salida digital", Level.WARN,
+            "No está en ${if (enabled) "PCM" else "Auto"}.", "Arreglar")
+        if (enabled) {
+            val ok = try { AudioSetup.netflixDolbyOff(sh) } catch (e: IOException) { false }
+            list += if (ok) HealthCheck("netflix", "Netflix sin Dolby", Level.OK, "Netflix manda audio común.")
+            else HealthCheck("netflix", "Netflix sin Dolby", Level.WARN, "Netflix volvió a mandar Dolby.", "Arreglar")
+        }
+        list += if (read("settings get system tcl_sys_network_standby_enabled") == "1")
+            HealthCheck("standby", "Reposo con red", Level.OK, "Network Standby: Alexa y el reinicio programado funcionan.")
+        else HealthCheck("standby", "Reposo con red", Level.WARN,
+            "Activá Settings → System → Power & Energy → TV Standby → Standby Mode → Network Standby.")
+        list += if (!incompatible) HealthCheck("master", "Volumen maestro", Level.OK, "Responde.")
+        else HealthCheck("master", "Volumen maestro", Level.ERROR,
+            "No responde: puede que una actualización de la TV lo haya cambiado.", "Volver a probar")
+        health = list
+    }
+
+    fun fix(id: String) {
+        try {
+            when (id) {
+                "adb" -> shell.commands.run("echo ok")
+                "optical" -> shell.commands.run("am start -n com.android.tv.settings/.MainSettings")
+                "spdif", "netflix" ->
+                    if (enabled) AudioSetup.enable(shell.commands, prefs, restartNetflix = id == "netflix")
+                    else AudioSetup.disable(shell.commands, prefs)
+                "master" -> {
+                    incompatible = master.read() == null
+                    if (!incompatible) master.reapply()
+                }
+            }
+            log.add("Arreglo aplicado: $id")
+        } catch (e: IOException) {
+            log.add("No se pudo arreglar $id: ${e.message}")
+        }
+        refreshHealth()
+    }
+
+    fun repairAll() {
+        for (c in health.filter { it.level != Level.OK && it.fixLabel != null && it.id != "optical" }) fix(c.id)
+        master.reapply()
+        refreshHealth()
+    }
+
+    // ---------------------------------------------------------------- optimizar y reinicio
+
+    fun stats(): Optimizer.Stats? = try { Optimizer.stats(shell.commands) } catch (e: IOException) { null }
+
+    fun optimize(): Optimizer.Result? = try {
+        Optimizer.run(shell.commands).also {
+            log.add("Optimizado: ${it.freedStorageMb} MB de espacio y ${it.freedMemoryMb} MB de memoria")
+        }
+    } catch (e: IOException) {
+        log.add("No se pudo optimizar: ${e.message}")
+        null
+    }
+
+    fun rebootNow() {
+        log.add("Reinicio pedido desde la app")
+        try { shell.commands.reboot() } catch (e: IOException) { log.add("No se pudo reiniciar: ${e.message}") }
+    }
+
+    /** Alarma del reinicio programado: reinicia si la TV está apagada; si no, espera hasta 3 h. */
+    fun onRebootAlarm(context: Context, retry: Boolean) {
+        if (!running || !config.rebootEnabled) return
+        val pm = context.getSystemService(PowerManager::class.java)
+        val wake = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "volumenmaestro:reinicio")
+        wake.acquire(60_000)
+        val now = System.currentTimeMillis()
+        if (!retry) prefs.edit().putLong("reboot_deadline", now + RebootScheduler.MAX_WAIT_MS).apply()
+        val deadline = prefs.getLong("reboot_deadline", now)
+        if (!pm.isInteractive) {
+            prefs.edit().remove("reboot_deadline").apply()
+            File(app.filesDir, "reboot_marker").writeText(now.toString())
+            log.add("Reinicio programado: reiniciando")
+            commands.execute {
+                try { shell.commands.reboot() } catch (e: IOException) { log.add("No se pudo reiniciar: ${e.message}") }
+                wake.release()
+            }
+            return
+        }
+        if (now < deadline) {
+            RebootScheduler.scheduleRetry(context)
+        } else {
+            prefs.edit().remove("reboot_deadline").apply()
+            log.add("Reinicio programado salteado: la TV estuvo en uso")
+            RebootScheduler.schedule(context, config)
+        }
+        wake.release()
+    }
+
+    /** Después de un reinicio programado, si la pantalla se prendió sola, la vuelve a apagar. */
+    private fun handleRebootMarker() {
+        val marker = File(app.filesDir, "reboot_marker")
+        if (!marker.exists()) return
+        val at = marker.readText().toLongOrNull() ?: 0L
+        marker.delete()
+        if (System.currentTimeMillis() - at > 20 * 60 * 1000) return
+        log.add("Reinicio programado hecho")
+        Thread.sleep(15_000)
+        if (app.getSystemService(PowerManager::class.java).isInteractive) {
+            shell.commands.run("input keyevent KEYCODE_SLEEP")
+            log.add("Pantalla apagada después del reinicio")
+        }
+    }
+
+    // ---------------------------------------------------------------- atajo del control
+
+    fun startLearning() {
+        learning = true
+        learnedKey = 0
+        rejectedKey = 0
+        main.postDelayed({ learning = false }, LEARN_TIMEOUT_MS)
+    }
+
+    fun stopLearning() {
+        learning = false
+    }
+
+    /** Llamado por el servicio para cada tecla. Devuelve true si la consume. */
+    fun onKey(event: KeyEvent): Boolean {
+        val code = event.keyCode
+        if (learning) {
+            if (code in NOT_ALLOWED) {
+                if (event.action == KeyEvent.ACTION_DOWN && code != KeyEvent.KEYCODE_DPAD_CENTER &&
+                    code != KeyEvent.KEYCODE_BACK && code !in DPAD
+                ) rejectedKey = code
+                return false
+            }
+            if (event.action == KeyEvent.ACTION_DOWN) {
+                learnedKey = code
+                learning = false
+                log.add("Botón detectado: ${KeyEvent.keyCodeToString(code)}")
+            }
+            return true
+        }
+        if (config.shortcutKey == 0 || code != config.shortcutKey) return false
+        when (config.shortcutMode) {
+            ShortcutMode.SINGLE_PRESS ->
+                if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) toggleFromShortcut()
+            ShortcutMode.LONG_PRESS -> when (event.action) {
+                KeyEvent.ACTION_DOWN -> if (event.repeatCount == 0) {
+                    shortcutDown = true
+                    longFired = false
+                    main.postDelayed(longPress, LONG_PRESS_MS)
+                }
+                KeyEvent.ACTION_UP -> {
+                    shortcutDown = false
+                    main.removeCallbacks(longPress)
+                    // Toque corto: se reenvía para que el botón haga lo de siempre.
+                    // Las teclas inyectadas no vuelven a pasar por este filtro.
+                    if (!longFired) commands.execute {
+                        try { shell.commands.run("input keyevent $code") } catch (_: IOException) { }
+                    }
+                }
+            }
+        }
+        return true
+    }
+
+    private val DPAD = setOf(
+        KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_DPAD_DOWN,
+        KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT,
+    )
+
+    private val longPress = Runnable {
+        if (shortcutDown) {
+            longFired = true
+            toggleFromShortcut()
+        }
+    }
+
+    private fun toggleFromShortcut() = setEnabled(!enabled, "atajo del control")
+
+    // ---------------------------------------------------------------- desinstalar
+
+    /** Deja la TV como venía antes de que la interfaz abra el desinstalador. */
+    fun prepareUninstall() {
+        try {
+            AudioSetup.disable(shell.commands, prefs)
+            master.setTarget(1f, 0)
+            RebootScheduler.cancelAll(app)
+            val component = "${app.packageName}/${VolumeService::class.java.name}"
+            val shortComponent = "${app.packageName}/.VolumeService"
+            val current = shell.commands.run("settings get secure enabled_accessibility_services").trim()
+            val rest = current.split(':').filter { it.isNotBlank() && it != component && it != shortComponent && it != "null" }
+            log.add("Desinstalación: TV restaurada")
+            shell.commands.run(
+                if (rest.isEmpty()) "settings delete secure enabled_accessibility_services"
+                else "settings put secure enabled_accessibility_services ${rest.joinToString(":")}",
+            )
+        } catch (e: IOException) {
+            log.add("Desinstalación incompleta: ${e.message}")
+        }
+    }
+}
