@@ -19,7 +19,7 @@
 - Nada a medias en el código.
 
 ## Próximo paso CONCRETO
-Activar el hook SessionStart: correr el comando de PowerShell que crea `.claude/settings.json` desde `docs/claude-settings.json` (está en el README de esta sesión y en `docs/TODO.md`). Después, con Guido: probar el volumen en Plex/Disney+/Prime/HBO y un reinicio programado real.
+Con Guido frente a la TV: probar el volumen en Plex/Disney+/Prime/HBO y un reinicio programado real.
 
 ## Bloqueos
 - Ninguno.

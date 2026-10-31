@@ -5,7 +5,7 @@
 2026-10-31 — ver SESSION_HANDOFF.md
 
 ## 🔴 Crítico
-- [ ] Activar el hook SessionStart y los permisos del proyecto: crear `.claude/settings.json` a partir de `docs/claude-settings.json` (el sistema de permisos no dejó que Claude lo creara solo).
+- (nada)
 
 ## 🟠 Importante
 - [ ] Guido: probar el volumen de oído en Plex, Disney+, Prime y HBO Max en modo ENCENDIDO. Si alguna no responde, revisar su camino de audio (`docs/audio-dolby.md`): puede seguir mandando Dolby por offload.
