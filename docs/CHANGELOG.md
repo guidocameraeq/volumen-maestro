@@ -2,6 +2,15 @@
 
 > Historia permanente. `/cierre` agrega una entrada AL TOPE en cada sesión. Orden descendente estricto, sin excepciones. Nada de versiones duplicadas en otros docs.
 
+## 2026-10-31 — Cierre: repo autosuficiente
+
+### Changed
+- `keystore.jks` versionado en el repo público, para compilar e instalar como actualización desde cualquier PC (ADR-012).
+- El proyecto pasó a `C:\Users\Usuario\Desktop\Proyectos\volumen-maestro`.
+
+### Added
+- `.claude/settings.json`: hook SessionStart (inyecta el handoff en cada chat nuevo) y permisos del proyecto.
+
 ## 2026-10-31 — Volumen Maestro 2.1: vuelve la bajada progresiva
 
 ### Fixed
