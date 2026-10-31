@@ -22,7 +22,7 @@ El APK queda en `app\build\outputs\apk\release\app-release.apk` (~1,8 MB, minifi
 
 ## Firma
 
-- `keystore.jks` en la raíz, **no versionado** (alias `vm`, contraseña `android`). Es la misma clave de la v1.
+- `keystore.jks` en la raíz, **versionado en el repo** (alias `vm`, contraseña `android`). Es la misma clave de la v1. Está en el repo público por decisión de Guido (ADR-012): así se puede compilar e instalar como actualización desde cualquier PC con un `git clone`.
 - Si se pierde: hay que desinstalar la app de la TV, instalar la nueva y volver a habilitar el servicio y aceptar el permiso de depuración (se pierden los ajustes salvo la copia en `/sdcard`). Para generar una nueva: `keytool -genkeypair -keystore keystore.jks -storepass android -keypass android -alias vm -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Volumen Maestro"`.
 
 ## Instalar en la TV

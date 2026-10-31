@@ -23,7 +23,7 @@ Este repo también guarda **toda la historia de esa TV** (`docs/tv-guido-tcl/`):
 | adb | Platform-Tools instalado con winget: `%LOCALAPPDATA%\Microsoft\WinGet\Packages\Google.PlatformTools_Microsoft.Winget.Source_8wekyb3d8bbwe\platform-tools\adb.exe` |
 | JDK | Temurin 17: `C:\Program Files\Eclipse Adoptium\jdk-17*` → `$env:JAVA_HOME` |
 | Android SDK | `%LOCALAPPDATA%\Android\Sdk` (platform 34, build-tools 34.0.0) |
-| Firma | `keystore.jks` en la raíz, **no versionado** (alias `vm`, clave `android`). Sin él no se puede actualizar la app instalada sin desinstalarla |
+| Firma | `keystore.jks` en la raíz, **versionado a propósito** (alias `vm`, clave `android`): Guido no guarda nada en la PC. Sin él no se puede actualizar la app instalada sin desinstalarla |
 
 Pasos: `adb connect 192.168.0.219:5555` → `adb devices` debe decir `device`. Si dice `unauthorized`, Guido tiene que aceptar "Allow USB debugging?" en la TV. La depuración USB de la TV **tiene que quedar activada**: la app la usa desde adentro (127.0.0.1:5555).
 

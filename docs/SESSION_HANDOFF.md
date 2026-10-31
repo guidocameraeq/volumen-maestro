@@ -13,7 +13,7 @@
 ## Estado
 - TV: Volumen Maestro 2.1 instalada y ENCENDIDA. Tema Sable láser, curva Ampli (la eligió Guido), atajo Info mantenido 2 s. Audio Output Optical, Digital Audio Out PCM, Netflix sin Dolby.
 - Verificado por Guido: atajo Info y bajada progresiva al mantener apretado.
-- `keystore.jks` y `.local-privado/` solo en la PC (no versionados).
+- `keystore.jks` versionado en el repo (ADR-012). `.local-privado/` (capturas del inicio con la foto de perfil) solo en la PC, no hace falta guardarlo.
 
 ## En curso
 - Nada a medias en el código.

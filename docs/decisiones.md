@@ -15,6 +15,7 @@ Cada decisión con alternativas: qué se eligió, qué se descartó y por qué. 
 | 009 | Reinicio programado con `reboot:` de adbd y volver a apagar la pantalla | 31/10/2026 |
 | 010 | Copia de seguridad en `/sdcard` escrita por la shell | 31/10/2026 |
 | 011 | Atajo del control con `getevent` en vez del filtro de teclas | 31/10/2026 |
+| 012 | La clave de firma va en el repo público | 31/10/2026 |
 
 ## ADR-001 — Volumen maestro en vez de efectos de audio
 - **Contexto**: la salida óptica es de volumen fijo; hacía falta una capa de volumen por software.
@@ -67,3 +68,9 @@ Cada decisión con alternativas: qué se eligió, qué se descartó y por qué. 
 - **Opciones**: prender el filtro solo con atajo configurado (sigue rompiendo la repetición en ese caso) · leer las señales crudas del control con `getevent` por ADB.
 - **Elegido**: `getevent` en una conexión ADB propia. Atajo y repetición funcionan juntos (verificado por Guido el 31/10). El atajo se guarda como código del kernel (Info = `0xC3`); la config pasó a versión 2 y migra el KEYCODE_INFO viejo.
 - **Costo**: la señal no se puede consumir: el botón del atajo igual hace su función normal en la TV.
+
+## ADR-012 — La clave de firma va en el repo público
+- **Contexto**: `keystore.jks` firma la app. Android solo acepta una actualización firmada con la misma clave; sin ella hay que desinstalar, y se pierden la clave ADB autorizada y los ajustes. Guido no quiere guardar nada en la PC.
+- **Opciones**: dejarla solo en la PC · guardarla en un lugar privado · subirla al repo público.
+- **Elegido**: subirla al repo público, por decisión de Guido. Cualquier PC puede compilar e instalar la app como actualización con un `git clone`.
+- **Riesgo aceptado**: cualquiera puede firmar una app que la TV acepte como "actualización" de Volumen Maestro. Esa app heredaría los datos de la actual, incluida su clave ADB autorizada (acceso de shell a la TV). Para que pase, alguien tendría que lograr instalarla en esta TV (con acceso a la red de la casa y a la depuración, o convenciendo a Guido de instalarla). Mitigación: instalar solo APKs compilados desde este repo o descargados de sus Releases.
