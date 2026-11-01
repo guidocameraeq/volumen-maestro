@@ -1,6 +1,6 @@
 # Temas: cómo funcionan y cómo agregar uno
 
-Un tema dibuja los **dos carteles** que aparecen al cambiar el volumen: el panel inferior y el lateral. Los 12 que trae la app (11 de los mockups + Clásico) están en `app/src/main/java/local/volumenmaestro/overlay/themes/`. Los diseños originales, animados, se pueden ver en [`mockups/temas.html`](mockups/temas.html).
+Un tema dibuja los **dos carteles** que aparecen al cambiar el volumen: el panel inferior y el lateral. Los 15 que trae la app (11 de los mockups, Clásico y 3 de Noche de brujas) están en `app/src/main/java/local/volumenmaestro/overlay/themes/`. Los diseños originales, animados, se pueden ver en [`mockups/temas.html`](mockups/temas.html) y [`mockups/temas-spooky.html`](mockups/temas-spooky.html).
 
 ## El contrato
 
@@ -56,7 +56,7 @@ interface Theme {
        }
    }
    ```
-3. Sumalo a la lista de `ThemeRegistry.all` en `overlay/Theme.kt` (el orden es el de la grilla).
+3. Sumalo a su grupo en `ThemeRegistry.groups` (`overlay/Theme.kt`): los grupos y su orden son los de la pestaña Temas.
 4. `/instalar` y probalo: en la app, pestaña Temas → elegirlo → "Probar en pantalla". Mirá que no se asome nada del cartel de TCL abajo ni de la barra gris a la derecha.
 
 ## Los temas actuales
@@ -75,3 +75,8 @@ interface Theme {
 | `acuatico` | Acuático | Tubo de agua con pez |
 | `terminal` | Terminal hacker | Lluvia de caracteres |
 | `clasico` | Clásico | Barra simple (el de la v1) |
+| `espiral` | Colina espiral | Luna, barra a rayas con moño de murciélago y colina en espiral |
+| `candelabro` | Candelabro gótico | Una vela alta cuya cera es el nivel |
+| `telarana` | Hilo de seda | Arañita que baja por su hilo hasta el nivel |
+
+Grupos de la pestaña Temas: **Sobrios** (clasico, vidrio, ondas, retro), **Fantasía** (medieval, espacial, acuatico, steampunk, sable), **Gamer y tecno** (neon, arcade, terminal), **Noche de brujas** (espiral, candelabro, telarana). Clásico va primero porque es el de fábrica.

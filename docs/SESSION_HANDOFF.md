@@ -2,38 +2,36 @@
 
 > Save game del proyecto. `/cierre` lo SOBREESCRIBE ENTERO en cada sesión — acá nunca se apila historia (eso vive en CHANGELOG). El hook SessionStart lo inyecta en cada chat nuevo: **tope de 5.500 bytes** (unas 70 líneas); si se pasa, el hook lo corta y avisa "CORTADO".
 
-**Cierre**: 2026-10-31 · **Último commit**: ver `git log -1` (cierre de sesión)
+**Cierre**: 2026-11-01 · **Último commit**: ver `git log -1` (cierre de sesión)
 
 ## Qué se hizo
-- Diagnóstico y limpieza de la TV TCL de Guido: caché, apps de fábrica quitadas (reversible), Alexa arreglada con Network Standby. Historia en `docs/tv-guido-tcl/`.
-- Investigación del audio por fibra: el volumen maestro de AudioFlinger funciona con todo lo PCM (también Netflix en túnel); con Dolby no hay forma. Ver `docs/audio-dolby.md`.
-- Volumen Maestro 1.0 → 2.0 (Compose for TV, motor en `:motor`, 5 pestañas, 12 temas) → 2.1 (vuelve la bajada progresiva al mantener apretado; el atajo se escucha con `getevent`, ADR-011).
-- Repo público guidocameraeq/volumen-maestro con README, landing (Pages desde `/docs`) y releases v2.0.0 y v2.1.0 con el APK.
-- El proyecto vive en `C:\Users\Usuario\Desktop\Proyectos\volumen-maestro`.
-- `keystore.jks` subido al repo público por decisión de Guido (ADR-012).
-- Hook SessionStart y permisos del proyecto activos (`.claude/settings.json`, versionado).
+- Arreglado el mudo con la app encendida (empezó con Disney+, era todo): al prender la TV, TCL engancha 7 efectos de sonido a la mezcla y Android redondea el volumen maestro a 0 o 1. Un ecualizador plano en la mezcla controla el volumen (ADR-013, `audio/MixVolume.kt`). Guido lo confirmó de oído en Disney+, YouTube, Netflix, Plex, Prime y Max, también después de reiniciar.
+- Retraso al mantener apretado: era la transición; queda "Apagada" de fábrica.
+- 3 temas de Noche de brujas (Colina espiral, Candelabro gótico, Hilo de seda) y la pestaña Temas en 4 grupos; arreglado el foco que corría la columna derecha.
+- Botón TCL Home identificado (`KEY_DASHBOARD`, `0xCC`, abre `com.tcl.dashboard`). Spec del panel de apps abiertas escrita y sellada, en BORRADOR (ADR-014).
+- Volumen Maestro 2.2 (versionCode 4) instalada en la TV.
+- 8 investigadores (Sonnet) buscaron ideas para mejorar la TV: resumen en `docs/ideas-google-tv.md`.
 
 ## Estado
-- TV: Volumen Maestro 2.1 instalada y ENCENDIDA. Tema Sable láser, curva Ampli (la eligió Guido), atajo Info mantenido 2 s. Audio Output Optical, Digital Audio Out PCM, Netflix sin Dolby.
-- Verificado al cierre (por ADB): motor y lector `getevent` corriendo; bajar/subir el volumen mueve el volumen maestro (1.0 → 0,94 → 1.0), o sea la app sigue autorizada. El panel sobre el cartel de TCL no se pudo capturar (Netflix estaba abierto: sale negro por DRM); se había verificado antes en la sesión.
-- Verificado por Guido: atajo Info y bajada progresiva al mantener apretado.
-- `.local-privado/` (capturas del inicio con la foto de perfil) solo en la PC; no hace falta guardarlo.
+- TV: Volumen Maestro 2.2 ENCENDIDA. Con la app encendida, `dumpsys media.audio_flinger | grep "effects for session"` da 8 (los 7 de TCL + nuestro Equalizer). Transición de Guido: Apagada.
+- Red: la TV está en "Yulius 4" (`192.168.0.219`); la PC a veces queda en "Domotics3" (ver `CLAUDE.md`).
+- Nada se quitó de la TV hoy. `com.tcl.dashboard` sigue instalado.
 
 ## En curso
-- Nada a medias.
+- Panel de apps abiertas: solo spec (`docs/specs/2026-11-01-panel-apps.md`, BORRADOR sellado). Falta el OK de Guido → `node ~/.claude/skills/arquitecto/scripts/arquitecto.cjs ready <spec>`.
 
 ## Próximo paso CONCRETO
-Con Guido frente a la TV: probar de oído el volumen en Plex, Disney+, Prime y HBO Max, y un reinicio programado real (2-3 minutos adelante, TV apagada con el control). Detalle en `docs/TODO.md`.
+Chat nuevo: `inicio — ejecutá el spec docs/specs/2026-11-01-panel-apps.md`. Primero mostrarle a Guido la spec final y pasarla a READY; antes de quitar `com.tcl.dashboard`, mostrarle el panel de TCL desde la pantalla de inicio (sobre Netflix/Disney+ la captura sale vacía).
 
 ## Bloqueos
 - Ninguno.
 
 ## Archivos tocados
-- Todo el repo (sesión fundacional).
+- `audio/MixVolume.kt` (nuevo), `engine/Engine.kt`, `AndroidManifest.xml` (MODIFY_AUDIO_SETTINGS), `settings/Config.kt`, `overlay/Theme.kt` (grupos), `overlay/themes/{Espiral,Candelabro,Telarana}Theme.kt` (nuevos), `ui/ThemesScreen.kt`, `ui/MainActivity.kt`, `app/build.gradle.kts`.
+- Docs: decisiones (ADR-013/014), arquitectura, audio-dolby, temas, `mockups/temas-spooky.html`, `specs/2026-11-01-panel-apps.md`, `ideas-google-tv.md`, `tv-guido-tcl/sesiones/2026-11-01.md`, CLAUDE.md (red).
 
 ## Contexto que no está en otro doc
-- Guido usa Ambient con fondos propios y lo quiere así; el Game Bar y Alexa no se tocan.
-- Guido prefiere no guardar nada solo en la PC: todo lo del proyecto va al repo.
-- La app tiene su propia clave ADB autorizada en la TV ("volumen-maestro@tv"); la PC tiene la suya.
-- La interfaz de la app se puede manejar desde la PC con `input tap x y` (más seguro que las flechas).
-- El respaldo `/sdcard/VolumenMaestro/ajustes.json` queda en versión 1 hasta el próximo cambio de ajustes; la app lo migra al leerlo.
+- Bajar el volumen maestro sin el ecualizador deja la TV muda con los efectos de TCL y al rato puede tumbar el HAL de audio (el servidor se reinicia solo). No probar con `service call media.audio_flinger 7` valores < 0,5 con la app apagada sin saberlo.
+- La verificación del 31/10 (1,0 → 0,94) no servía: con el redondeo 0,94 suena igual que 1,0. Para probar el volumen, bajar por debajo de 0,5.
+- Pruebas de pestañas desde la PC: `am start -n local.volumenmaestro/.ui.MainActivity` + flechas + `screencap` anduvo bien (no apretar OK sin captura).
+- Guido: la auto-actualización desde GitHub quedó descartada por ahora (TODO).

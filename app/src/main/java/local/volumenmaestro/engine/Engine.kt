@@ -13,6 +13,7 @@ import local.volumenmaestro.AdbKeys
 import local.volumenmaestro.VolumeService
 import local.volumenmaestro.audio.AudioSetup
 import local.volumenmaestro.audio.MasterVolume
+import local.volumenmaestro.audio.MixVolume
 import local.volumenmaestro.audio.VolumeCurve
 import local.volumenmaestro.overlay.OverlayController
 import local.volumenmaestro.overlay.ThemeRegistry
@@ -53,6 +54,7 @@ object Engine {
     lateinit var shell: Shell
         private set
     private lateinit var master: MasterVolume
+    private val mix = MixVolume { log.add(it) }
     private var overlay: OverlayController? = null
     @Volatile private var keys: KeyPair? = null
     private var receiverRegistered = false
@@ -120,6 +122,7 @@ object Engine {
                 if (incompatible) log.add("El volumen maestro no responde: TV incompatible")
                 handleRebootMarker()
                 AudioSetup.enable(shell.commands, prefs, restartNetflix = false)
+                mix.ensure()
                 status = "Conectado"
             } catch (e: IOException) {
                 status = "Sin conexión: ${e.message}"
@@ -141,7 +144,10 @@ object Engine {
         overlay?.release()
         overlay = null
         master.stop()
-        commands.execute { shell.close() }
+        commands.execute {
+            mix.release()
+            shell.close()
+        }
         service = null
     }
 
@@ -183,6 +189,7 @@ object Engine {
             } catch (e: IOException) {
                 log.add("No se pudieron revisar los ajustes al prender: ${e.message}")
             }
+            mix.ensure()
             master.reapply()
         }
     }
@@ -191,6 +198,7 @@ object Engine {
         override fun run() {
             commands.execute {
                 if (!enabled || incompatible) return@execute
+                mix.ensure()
                 val real = master.read() ?: return@execute
                 if (abs(real - expectedGain()) > 0.0005f) {
                     log.add("El volumen maestro cambió a $real, lo vuelvo a aplicar")
@@ -226,10 +234,12 @@ object Engine {
             try {
                 if (on) {
                     AudioSetup.enable(shell.commands, prefs, restartNetflix = true)
+                    mix.ensure()
                     applyVolume(0)
                 } else {
                     AudioSetup.disable(shell.commands, prefs)
                     master.setTarget(1f, 0)
+                    mix.release()
                 }
                 status = if (on) "Conectado" else "Apagado: la TV está como venía"
                 log.add("Modo ${if (on) "ENCENDIDO" else "APAGADO"} ($reason)")
@@ -557,6 +567,7 @@ object Engine {
         try {
             AudioSetup.disable(shell.commands, prefs)
             master.setTarget(1f, 0)
+            mix.release()
             RebootScheduler.cancelAll(app)
             val component = "${app.packageName}/${VolumeService::class.java.name}"
             val shortComponent = "${app.packageName}/.VolumeService"

@@ -109,3 +109,4 @@ El valor original exacto de Netflix está en [`respaldo-inicio/audio-netflix-ori
 
 ## Sesiones
 - [`sesiones/2026-10-31.md`](sesiones/2026-10-31.md) — el primer día: diagnóstico, limpieza, Alexa, audio y Volumen Maestro v1 y v2.
+- [`sesiones/2026-11-01.md`](sesiones/2026-11-01.md) — el mudo de Disney+ (efectos de TCL), temas de Noche de brujas y el botón TCL Home.

@@ -40,6 +40,8 @@ Cuando una app suena, su audio entra por uno de estos caminos ("hilos de salida"
 - "Digital Audio Out" en **PCM** (`system tcl_sys_audio_spdif_outmode=1`): la TV decodifica todo y no pasa nada comprimido.
 - El volumen maestro sigue al número de volumen que TCL guarda aunque lo muestre como "no soportado".
 
+**Los efectos de TCL y el redondeo** (01/11/2026): al prender la TV, TCL engancha sus efectos de sonido a la mezcla. Con eso, Android redondea el volumen maestro a 0 o 1 en el mezclador (por debajo de 0,5 = mudo para todas las apps del camino MIXER). La app pone un ecualizador plano que controla el volumen y evita el redondeo (ADR-013). Para ver si están: `dumpsys media.audio_flinger | grep "effects for session"` (con la app encendida: 8 = los 7 de TCL + el nuestro). El camino DIRECT (Netflix en túnel) no pasa por ese redondeo.
+
 **Lo que se pierde**: el sonido envolvente 5.1 en el Sony. Con la fibra en PCM llega estéreo (que es lo que el Sony recibía de todos modos en PCM).
 
 **Modo APAGADO**: todo como venía. Las apps mandan Dolby, "Digital Audio Out" en Auto lo pasa tal cual al Sony (5.1) y el volumen se maneja con el control del Sony.

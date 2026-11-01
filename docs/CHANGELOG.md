@@ -2,6 +2,19 @@
 
 > Historia permanente. `/cierre` agrega una entrada AL TOPE en cada sesión. Orden descendente estricto, sin excepciones. Nada de versiones duplicadas en otros docs.
 
+## 2026-11-01 — Volumen Maestro 2.2: el mudo de Disney+ y los temas de Noche de brujas
+
+### Fixed
+- Con la app encendida, todo quedaba mudo después de prender la TV (se notó en Disney+): los efectos de sonido de TCL hacían que Android redondeara el volumen maestro a 0 o 1. Un ecualizador plano en la mezcla se hace cargo del volumen (`audio/MixVolume.kt`, ADR-013).
+- Retraso del volumen al mantener apretado: la transición pasa a "Apagada" de fábrica.
+- Pestaña Temas: al bajar desde las pestañas, el foco va al tema elegido en vez de correr la columna de la derecha.
+
+### Added
+- 3 temas de "Noche de brujas": Colina espiral, Candelabro gótico, Hilo de seda (mockups en `docs/mockups/temas-spooky.html`).
+- La pestaña Temas en 4 grupos: Sobrios, Fantasía, Gamer y tecno, Noche de brujas (`ThemeRegistry.groups`).
+- Spec del panel de apps abiertas con el botón TCL Home (`docs/specs/2026-11-01-panel-apps.md`, en BORRADOR sellado) y ADR-014.
+- Bitácora de la TV del día (`docs/tv-guido-tcl/sesiones/2026-11-01.md`).
+
 ## 2026-10-31 — Cierre: repo autosuficiente
 
 ### Changed

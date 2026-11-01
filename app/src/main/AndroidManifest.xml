@@ -6,6 +6,8 @@
     <!-- Reinicio programado; el permiso se concede por ADB con appops. -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- Ecualizador plano sobre la mezcla general (sesión 0) que controla el volumen, ADR-013. -->
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
 
     <uses-feature android:name="android.software.leanback" android:required="false" />
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />

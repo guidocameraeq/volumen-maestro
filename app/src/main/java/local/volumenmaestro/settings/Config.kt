@@ -14,7 +14,7 @@ data class Config(
     val curve: CurveType = CurveType.EVEN_DB,
     val dbPerPoint: Float = 0.5f,
     val zeroIsSilence: Boolean = true,
-    val transition: Transition = Transition.FAST,
+    val transition: Transition = Transition.OFF,
     val themeId: String = "clasico",
     val overlayDuration: OverlayDuration = OverlayDuration.NORMAL,
     val showSide: Boolean = true,

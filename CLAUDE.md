@@ -19,7 +19,7 @@ Este repo también guarda **toda la historia de esa TV** (`docs/tv-guido-tcl/`):
 | Qué | Valor |
 |---|---|
 | TV | TCL "Smart TV Pro" (G09), Google TV, Android TV 12, Amlogic, 2 GB RAM |
-| IP / puerto ADB | `192.168.0.219:5555` (red Wi-Fi de la casa; si cambió, buscar el puerto 5555 abierto en la red) |
+| IP / puerto ADB | `192.168.0.219:5555` en la red Wi-Fi "Yulius 4" (puerta de enlace 192.168.0.1). Si no conecta, primero mirar que la PC esté en esa red (a veces queda en "Domotics3", 192.168.33.x); si la IP cambió, buscar el puerto 5555 abierto en la red |
 | adb | Platform-Tools instalado con winget: `%LOCALAPPDATA%\Microsoft\WinGet\Packages\Google.PlatformTools_Microsoft.Winget.Source_8wekyb3d8bbwe\platform-tools\adb.exe` |
 | JDK | Temurin 17: `C:\Program Files\Eclipse Adoptium\jdk-17*` → `$env:JAVA_HOME` |
 | Android SDK | `%LOCALAPPDATA%\Android\Sdk` (platform 34, build-tools 34.0.0) |
@@ -76,7 +76,8 @@ Los rituales viven en `.claude/skills/`: **`/inicio` · `/cierre` · `/instalar`
 | `docs/temas.md` | Cómo funciona y cómo se agrega un tema | al cambiar el contrato de temas |
 | `docs/desarrollo.md` | Entorno, compilar, instalar, depurar | al cambiar herramientas |
 | `docs/tv-guido-tcl/` | Historia de la TV, apps quitadas y cómo restaurarlas, respaldos | cada vez que se toca la TV |
-| `docs/specs/` | Specs (la v2 está COMPLETO) | Arquitecto / brainstorming |
+| `docs/specs/` | Specs (la v2 está COMPLETO; el panel de apps, en BORRADOR) | Arquitecto / brainstorming |
+| `docs/ideas-google-tv.md` | Ideas investigadas para mejorar la TV, para elegir | al investigar o al hacer una |
 
 **Reglas del sistema**: una sola narrativa por sesión (HANDOFF + CHANGELOG). Un número vive en UN archivo. Lo derivable del código o de git NO se escribe en un doc.
 

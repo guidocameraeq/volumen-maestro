@@ -4,6 +4,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -14,12 +15,15 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -27,8 +31,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -40,32 +48,60 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.tv.material3.Text
+import kotlin.math.sin
 import local.volumenmaestro.engine.Protocol
 import local.volumenmaestro.overlay.OverlayController
 import local.volumenmaestro.overlay.OverlayState
 import local.volumenmaestro.overlay.Theme
 import local.volumenmaestro.overlay.ThemeRegistry
 import local.volumenmaestro.settings.OverlayDuration
-import kotlin.math.sin
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ThemesScreen(state: EngineState, client: EngineClient) {
     val c = state.config
     var focusedId by remember { mutableStateOf(c.themeId) }
-    Columns {
+    // Al bajar desde las pestañas el foco va al tema elegido, no a la columna de la derecha
+    // (que se corría hacia abajo y tapaba la vista previa).
+    val selectedRequester = remember { FocusRequester() }
+    var selectedShown by remember { mutableStateOf(false) }
+    val gridState = rememberLazyGridState()
+    LaunchedEffect(Unit) { gridState.scrollToItem(gridIndexOf(c.themeId)) }
+    Columns(
+        Modifier
+            .focusProperties { enter = { if (selectedShown) selectedRequester else FocusRequester.Default } }
+            .focusGroup(),
+    ) {
         Column(Modifier.weight(1f).fillMaxHeight()) {
             LazyVerticalGrid(
                 columns = GridCells.Fixed(3),
+                state = gridState,
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                items(ThemeRegistry.all, key = { it.id }) { theme ->
-                    ThemeCard(
-                        theme,
-                        selected = theme.id == c.themeId,
-                        onFocus = { focusedId = theme.id },
-                        onClick = { client.setConfig(c.copy(themeId = theme.id)) },
-                    )
+                ThemeRegistry.groups.forEachIndexed { i, group ->
+                    item(key = "grupo-${group.name}", span = { GridItemSpan(maxLineSpan) }) {
+                        Column(Modifier.padding(top = if (i == 0) 0.dp else 12.dp)) {
+                            Text(group.name, color = Palette.text, fontSize = 19.sp, fontWeight = FontWeight.SemiBold)
+                            Hint(group.hint)
+                        }
+                    }
+                    items(group.themes, key = { it.id }) { theme ->
+                        val selected = theme.id == c.themeId
+                        if (selected) {
+                            DisposableEffect(Unit) {
+                                selectedShown = true
+                                onDispose { selectedShown = false }
+                            }
+                        }
+                        ThemeCard(
+                            theme,
+                            selected = selected,
+                            onFocus = { focusedId = theme.id },
+                            onClick = { client.setConfig(c.copy(themeId = theme.id)) },
+                            modifier = if (selected) Modifier.focusRequester(selectedRequester) else Modifier,
+                        )
+                    }
                 }
             }
         }
@@ -101,11 +137,17 @@ fun ThemesScreen(state: EngineState, client: EngineClient) {
 }
 
 @Composable
-private fun ThemeCard(theme: Theme, selected: Boolean, onFocus: () -> Unit, onClick: () -> Unit) {
+private fun ThemeCard(
+    theme: Theme,
+    selected: Boolean,
+    onFocus: () -> Unit,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val interaction = remember { MutableInteractionSource() }
     val focused by interaction.collectIsFocusedAsState()
     Column(
-        Modifier
+        modifier
             .scale(if (focused) 1.05f else 1f)
             .background(if (focused) Palette.surfaceHigh else Palette.surface, RoundedCornerShape(16.dp))
             .border(2.dp, if (selected) Palette.accent else Color.Transparent, RoundedCornerShape(16.dp))
@@ -170,6 +212,16 @@ private fun DrawScope.drawPanel(
         draw(canvas, w, h)
         canvas.restore()
     }
+}
+
+/** Posición del título del grupo del tema en la grilla (así se ven el título y el tema). */
+private fun gridIndexOf(themeId: String): Int {
+    var index = 0
+    for (group in ThemeRegistry.groups) {
+        if (group.themes.any { it.id == themeId }) return index
+        index += 1 + group.themes.size
+    }
+    return 0
 }
 
 /** Volumen de demostración: sube, baja y silencia cada tanto. */

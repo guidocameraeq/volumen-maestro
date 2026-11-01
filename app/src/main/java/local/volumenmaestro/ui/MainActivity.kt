@@ -112,8 +112,11 @@ private fun ServiceOff() {
 }
 
 @Composable
-fun Columns(content: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit) = Row(
-    Modifier.fillMaxSize(),
+fun Columns(
+    modifier: Modifier = Modifier,
+    content: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit,
+) = Row(
+    modifier.fillMaxSize(),
     horizontalArrangement = Arrangement.spacedBy(24.dp),
     content = content,
 )

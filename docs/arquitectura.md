@@ -34,6 +34,7 @@ flowchart LR
 | Motor | `engine/Engine.kt` | Singleton del proceso `:motor`. Escucha el volumen, aplica la curva, maneja los modos, los chequeos, el atajo, el reinicio y la copia |
 | Shell | `engine/Shell.kt` + `AdbClient.java` + `AdbKeys.java` | Cliente ADB mínimo propio contra el adbd de la TV, con su clave RSA. Canales: `volume` (rápido), `commands` (tareas largas) y una conexión de streaming para `getevent` (atajo) |
 | Volumen maestro | `audio/MasterVolume.kt` | Hilo propio que manda `setMasterVolume` con rampa en dB (pasos de 25 ms) y lo lee para el watchdog |
+| Volumen en la mezcla | `audio/MixVolume.kt` | Ecualizador plano en la sesión 0 que recibe el volumen maestro, así los efectos de TCL no lo redondean a 0 o 1 (ADR-013) |
 | Curva | `audio/VolumeCurve.kt` | Índice → ganancia: Pareja (dB por punto), Suave (cuadrática), Ampli (curva en S de −60 dB). En 100 siempre 1.0 |
 | Modos | `audio/AudioSetup.kt` | Los ajustes de ENCENDIDO y APAGADO (tabla en `tv-guido-tcl/README.md`) |
 | Carteles | `overlay/OverlayController.kt` | Las 2 ventanas (inferior 960×150 en x480/y882; lateral 108×430 en x1740/y326), animación de entrada/salida, solo anima mientras se ven |

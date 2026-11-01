@@ -3,13 +3,16 @@ package local.volumenmaestro.overlay
 import android.graphics.Canvas
 import local.volumenmaestro.overlay.themes.AcuaticoTheme
 import local.volumenmaestro.overlay.themes.ArcadeTheme
+import local.volumenmaestro.overlay.themes.CandelabroTheme
 import local.volumenmaestro.overlay.themes.EspacialTheme
+import local.volumenmaestro.overlay.themes.EspiralTheme
 import local.volumenmaestro.overlay.themes.MedievalTheme
 import local.volumenmaestro.overlay.themes.NeonTheme
 import local.volumenmaestro.overlay.themes.OndasTheme
 import local.volumenmaestro.overlay.themes.RetroTheme
 import local.volumenmaestro.overlay.themes.SableTheme
 import local.volumenmaestro.overlay.themes.SteampunkTheme
+import local.volumenmaestro.overlay.themes.TelaranaTheme
 import local.volumenmaestro.overlay.themes.TerminalTheme
 import local.volumenmaestro.overlay.themes.VidrioTheme
 
@@ -44,22 +47,23 @@ interface Theme {
     fun drawSide(canvas: Canvas, w: Int, h: Int, s: OverlayState)
 }
 
+/** Un grupo de la pestaña Temas. */
+class ThemeGroup(val name: String, val hint: String, val themes: List<Theme>)
+
 object ThemeRegistry {
-    /** El orden es el de la grilla de la pestaña Temas. Para sumar un tema, agregalo acá. */
-    val all: List<Theme> = listOf(
-        SableTheme,
-        NeonTheme,
-        MedievalTheme,
-        RetroTheme,
-        VidrioTheme,
-        ArcadeTheme,
-        EspacialTheme,
-        OndasTheme,
-        SteampunkTheme,
-        AcuaticoTheme,
-        TerminalTheme,
-        ClassicTheme,
+    /** Los grupos y su orden son los de la pestaña Temas. Para sumar un tema, agregalo a su grupo. */
+    val groups: List<ThemeGroup> = listOf(
+        ThemeGroup("Sobrios", "Pocos elementos, para todos los días.",
+            listOf(ClassicTheme, VidrioTheme, OndasTheme, RetroTheme)),
+        ThemeGroup("Fantasía", "Mundos con mucha escenografía.",
+            listOf(MedievalTheme, EspacialTheme, AcuaticoTheme, SteampunkTheme, SableTheme)),
+        ThemeGroup("Gamer y tecno", "Pantallas, píxeles y neón.",
+            listOf(NeonTheme, ArcadeTheme, TerminalTheme)),
+        ThemeGroup("Noche de brujas", "Oscuros y elegantes.",
+            listOf(EspiralTheme, CandelabroTheme, TelaranaTheme)),
     )
+
+    val all: List<Theme> = groups.flatMap { it.themes }
 
     fun byId(id: String): Theme = all.firstOrNull { it.id == id } ?: ClassicTheme
 }
