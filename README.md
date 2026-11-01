@@ -5,6 +5,7 @@
 <p align="center">
   <a href="https://guidocameraeq.github.io/volumen-maestro/"><b>Landing</b></a> ·
   <a href="https://guidocameraeq.github.io/volumen-maestro/mockups/temas.html"><b>Probá los temas en vivo</b></a> ·
+  <a href="https://guidocameraeq.github.io/volumen-maestro/mockups/temas-spooky.html">Noche de brujas</a> ·
   <a href="docs/arquitectura.md">Arquitectura</a> ·
   <a href="docs/audio-dolby.md">La historia del audio</a> ·
   <a href="docs/temas.md">Crear un tema</a>
@@ -39,8 +40,9 @@ Volumen Maestro devuelve el control: los botones de volumen de la TV pasan a man
 
 - 🔊 **Volumen con el control de la TV** en todas las apps (YouTube, Netflix, Spotify…), aunque la salida óptica sea de volumen fijo. También responde a Alexa.
 - 🔀 **Interruptor ENCENDIDO / APAGADO**: encendida, todo sale en PCM y el control maneja el volumen; apagada, la TV queda como venía (Dolby al equipo). Al prender la TV vuelve sola a ENCENDIDO.
-- 📈 **Curva de volumen configurable**: *Pareja* (elegís cuántos dB baja cada punto), *Suave* o *Ampli*, con gráfico en vivo y **transiciones suaves**.
-- ⚔️ **12 temas animados** para los carteles: Sable láser rojo, Neón cyberpunk, Medieval, Retro analógico, Minimal vidrio, Arcade 8-bit, Espacial, Ondas líquidas, Steampunk, Acuático, Terminal hacker y Clásico.
+- 📈 **Curva de volumen configurable**: *Pareja* (elegís cuántos dB baja cada punto), *Suave* o *Ampli*, con gráfico en vivo.
+- ⚔️ **15 temas animados** para los carteles, en 4 grupos: *Sobrios* (Clásico, Minimal vidrio, Ondas líquidas, Retro analógico), *Fantasía* (Medieval, Espacial, Acuático, Steampunk, Sable láser rojo), *Gamer y tecno* (Neón cyberpunk, Arcade 8-bit, Terminal hacker) y *Noche de brujas* (Colina espiral, Candelabro gótico, Hilo de seda).
+- 🔀 **Botón TCL Home como "Alt-Tab"**: un toque abre las apps abiertas (con vista previa), dos toques vuelven a la app anterior. "Limpiar todo" las cierra.
 - 🩺 **Estado tipo semáforo** con "Reparar todo" por si una actualización de la TV desacomoda algo.
 - 🧹 **Optimizar**: libera caché, cierra apps de fondo, muestra memoria, espacio y tiempo encendida.
 - 🔁 **Reinicio programado** por días y hora (espera si estás mirando la TV y la vuelve a apagar después).
@@ -52,7 +54,8 @@ Volumen Maestro devuelve el control: los botones de volumen de la TV pasan a man
 1. TCL procesa los botones de volumen y, aunque diga "no soportado", **guarda el número de volumen**.
 2. La app escucha ese número y lo traduce, con tu curva, al **volumen maestro de Android** (AudioFlinger), que se aplica a todo el audio PCM, también al modo "túnel" que usa Netflix.
 3. Cambiar el volumen maestro requiere permisos de sistema: la app se conecta al **ADB de la propia TV** (127.0.0.1:5555) con su propia clave, autorizada una vez.
-4. Dos ventanas opacas tapan los carteles de TCL con el tema que elegiste.
+4. Si la TV engancha sus efectos de sonido a la mezcla (TCL lo hace al prender), Android redondea el volumen maestro a 0 o 1; un **ecualizador plano** de Android se hace cargo del volumen y lo evita.
+5. Dos ventanas opacas tapan los carteles de TCL con el tema que elegiste.
 
 El por qué de cada pieza está en [`docs/decisiones.md`](docs/decisiones.md), y la investigación completa del audio, con lo que **no** funcionó, en [`docs/audio-dolby.md`](docs/audio-dolby.md).
 
@@ -82,9 +85,9 @@ Abrí **Volumen Maestro** desde "Your apps":
 |---|---|
 | **Inicio** | Prender/apagar, ver el estado y "Reparar todo" |
 | **Volumen** | Tipo de curva, dB por punto, volumen 0, transición |
-| **Temas** | Elegir el tema, probarlo en pantalla, duración y cartel lateral |
+| **Temas** | Elegir el tema (por grupos), probarlo en pantalla, duración y cartel lateral |
 | **Optimizar** | Optimizar ahora, reiniciar, reinicio programado |
-| **Ajustes** | Atajo del control, copia de seguridad, registro, desinstalar |
+| **Ajustes** | Atajo del control, botón TCL Home, copia de seguridad, registro, desinstalar |
 
 ## Compatibilidad
 
@@ -99,8 +102,9 @@ Abrí **Volumen Maestro** desde "Your apps":
 - [`docs/arquitectura.md`](docs/arquitectura.md): procesos, motor, protocolo y flujo de un toque de volumen.
 - [`docs/temas.md`](docs/temas.md): el contrato de los temas y cómo agregar uno nuevo.
 - [`docs/desarrollo.md`](docs/desarrollo.md): entorno, compilar, firmar, instalar, depurar.
-- [`docs/decisiones.md`](docs/decisiones.md): las 11 decisiones de diseño (ADR).
-- [`docs/specs/`](docs/specs/): la especificación aprobada.
+- [`docs/recientes.md`](docs/recientes.md): el panel de apps abiertas (botón TCL Home).
+- [`docs/decisiones.md`](docs/decisiones.md): las decisiones de diseño (ADR).
+- [`docs/specs/`](docs/specs/): las especificaciones aprobadas.
 - [`docs/tv-guido-tcl/`](docs/tv-guido-tcl/): la historia completa de la TV para la que se hizo (limpieza, Alexa, audio) y cómo restaurar lo que se cambió.
 
 Stack: Kotlin, Jetpack Compose for TV, Gradle 8.7, minSdk 28 / target 34. Sin librerías de terceros para lo crítico (el cliente ADB es propio).
