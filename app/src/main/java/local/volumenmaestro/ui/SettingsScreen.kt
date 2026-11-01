@@ -81,6 +81,10 @@ fun SettingsScreen(state: EngineState, client: EngineClient) {
                 else "Cada toque prende o apaga Volumen Maestro.")
                 Hint("El botón igual hace lo suyo en la TV, así que conviene uno que no uses (por ejemplo Info).")
             }
+            Section("Botón TCL Home") {
+                ToggleRow("Panel de apps abiertas", c.appPanel, { client.setConfig(c.copy(appPanel = it)) },
+                    "Un toque abre las apps abiertas; dos toques vuelven a la app anterior.")
+            }
             Section("Copia de seguridad") {
                 Hint("Cada cambio se guarda solo en /sdcard/VolumenMaestro. Si reinstalás la app, te ofrece restaurarla.")
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {

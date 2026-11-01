@@ -1,6 +1,6 @@
 # SPEC: Panel de apps abiertas (TCL Home) — Volumen Maestro
 El botón TCL Home del control pasa a ser "Alt-Tab": un toque abre un panel chico con las últimas apps, dos toques vuelven a la app anterior.
-- Estado: BORRADOR
+- Estado: COMPLETO 2026-11-01
 - Fecha: 2026-11-01
 - Sello del Arquitecto: `arquitecto: 2026-11-01 · kit 2.4.3 · chequeos: tamaño ✅ · entorno — (sin ficha del kit) · tope ✅ · hash 06fd6e28170a`
 

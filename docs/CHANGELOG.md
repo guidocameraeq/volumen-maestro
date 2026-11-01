@@ -2,6 +2,17 @@
 
 > Historia permanente. `/cierre` agrega una entrada AL TOPE en cada sesión. Orden descendente estricto, sin excepciones. Nada de versiones duplicadas en otros docs.
 
+## 2026-11-01 — Volumen Maestro 2.3: el botón TCL Home hace de "Alt-Tab"
+
+### Added
+- Panel de apps abiertas: un toque en TCL Home abre una franja con las apps recientes (vista previa o banner), OK abre, mantener OK cierra, "Limpiar todo" cierra todas menos Alexa, Ambient, Game Bar y la app; dos toques vuelven a la app anterior. Paquete `recientes/`, doc `docs/recientes.md`, spec COMPLETO. Interruptor en Ajustes.
+
+### Fixed
+- Al instalar o quitar una app, el lector del control quedaba duplicado y cada toque llegaba dos veces (también afectaba al atajo de Info).
+
+### Removed
+- En la TV: `com.tcl.dashboard` (el panel de cuenta TCL que abría TCL Home), reversible y anotado en `apps-quitadas.txt`.
+
 ## 2026-11-01 — Volumen Maestro 2.2: el mudo de Disney+ y los temas de Noche de brujas
 
 ### Fixed

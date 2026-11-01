@@ -9,6 +9,7 @@ import android.media.AudioManager
 import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
+import local.volumenmaestro.AdbClient
 import local.volumenmaestro.AdbKeys
 import local.volumenmaestro.VolumeService
 import local.volumenmaestro.audio.AudioSetup
@@ -17,6 +18,7 @@ import local.volumenmaestro.audio.MixVolume
 import local.volumenmaestro.audio.VolumeCurve
 import local.volumenmaestro.overlay.OverlayController
 import local.volumenmaestro.overlay.ThemeRegistry
+import local.volumenmaestro.recientes.AppPanel
 import local.volumenmaestro.settings.Config
 import local.volumenmaestro.settings.ConfigStore
 import local.volumenmaestro.settings.ShortcutMode
@@ -55,6 +57,8 @@ object Engine {
         private set
     private lateinit var master: MasterVolume
     private val mix = MixVolume { log.add(it) }
+    lateinit var appPanel: AppPanel
+        private set
     private var overlay: OverlayController? = null
     @Volatile private var keys: KeyPair? = null
     private var receiverRegistered = false
@@ -95,6 +99,7 @@ object Engine {
             main.post { overlay?.showMessage("Volumen Maestro: aceptá el permiso de depuración") }
         }
         master = MasterVolume(shell.volume)
+        appPanel = AppPanel(app, { shell.commands }, commands, main) { log.add(it) }
         overlay = OverlayController(s)
         applyOverlayConfig()
         enabled = true
@@ -138,6 +143,8 @@ object Engine {
 
     fun stop() {
         eventsRunning = false
+        readerGeneration++
+        eventStream?.close() // destraba el lector, que está esperando una señal del control
         main.removeCallbacks(watchdog)
         if (receiverRegistered) app.unregisterReceiver(receiver)
         receiverRegistered = false
@@ -199,6 +206,7 @@ object Engine {
             commands.execute {
                 if (!enabled || incompatible) return@execute
                 mix.ensure()
+                if (config.appPanel) appPanel.tick()
                 val real = master.read() ?: return@execute
                 if (abs(real - expectedGain()) > 0.0005f) {
                     log.add("El volumen maestro cambió a $real, lo vuelvo a aplicar")
@@ -469,6 +477,13 @@ object Engine {
 
     private val learnTimeout = Runnable { stopLearning() }
     @Volatile private var eventsRunning = false
+    /*
+     * Android a veces desconecta y reconecta el servicio de accesibilidad (por ejemplo al instalar o
+     * quitar una app): stop() + start() en el mismo proceso. Cada lector lleva su número y se va
+     * cuando ya no es el actual; si no, quedaban dos `getevent` y cada toque llegaba repetido.
+     */
+    @Volatile private var readerGeneration = 0
+    @Volatile private var eventStream: AdbClient? = null
 
     fun startLearning() {
         learning = true
@@ -485,13 +500,16 @@ object Engine {
 
     private fun startEventReader() {
         eventsRunning = true
+        val generation = ++readerGeneration
         Thread({
-            while (eventsRunning) {
+            while (eventsRunning && generation == readerGeneration) {
                 try {
                     val client = shell.openStream()
+                    eventStream = client
                     try {
                         val pending = StringBuilder()
                         client.stream("getevent") { text ->
+                            if (generation != readerGeneration) throw IOException("lector viejo")
                             pending.append(text)
                             while (true) {
                                 val nl = pending.indexOf("\n")
@@ -504,7 +522,7 @@ object Engine {
                         client.close()
                     }
                 } catch (e: Exception) {
-                    if (eventsRunning) Thread.sleep(5_000)
+                    if (eventsRunning && generation == readerGeneration) Thread.sleep(5_000)
                 }
             }
         }, "atajo-control").apply { isDaemon = true; start() }
@@ -530,6 +548,10 @@ object Engine {
             learnedKey = code
             stopLearning()
             log.add("Botón detectado: 0x%02X".format(code))
+            return
+        }
+        if (code == AppPanel.KEY_TCL_HOME) {
+            if (config.appPanel) appPanel.onKey(down)
             return
         }
         if (config.shortcutKey == 0 || code != config.shortcutKey) return

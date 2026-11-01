@@ -9,6 +9,14 @@
     <!-- Ecualizador plano sobre la mezcla general (sesión 0) que controla el volumen, ADR-013. -->
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
 
+    <!-- Ver las apps de TV instaladas (nombre, banner y cómo abrirlas) para el panel de apps. -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+        </intent>
+    </queries>
+
     <uses-feature android:name="android.software.leanback" android:required="false" />
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
 
@@ -29,6 +37,16 @@
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Panel de apps abiertas (botón TCL Home). Tarea aparte, translúcida y fuera de recientes,
+             para no traer al frente la pantalla principal de la app. -->
+        <activity
+            android:name=".recientes.RecentsActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:taskAffinity="local.volumenmaestro.recientes"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
         <!-- El motor vive en su propio proceso, liviano y sin Compose. El servicio conserva
              el nombre de la versión 1 para que siga habilitado después de actualizar. -->

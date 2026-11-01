@@ -73,6 +73,8 @@ class EngineService : Service() {
             Protocol.EXPORT_BACKUP -> out.putBoolean(Protocol.K_OK, Engine.exportBackup())
             Protocol.IMPORT_BACKUP -> out.putBoolean(Protocol.K_OK, Engine.importBackup())
             Protocol.PREPARE_UNINSTALL -> { Engine.prepareUninstall(); out.putBoolean(Protocol.K_OK, true) }
+            Protocol.CLOSE_APP -> Engine.appPanel.close(data.getString(Protocol.K_ID) ?: "")
+            Protocol.CLOSE_ALL -> Engine.appPanel.closeAll(data.getStringArrayList(Protocol.K_APPS).orEmpty())
         }
         if (what == Protocol.REPAIR_ALL || what == Protocol.FIX) out.putAll(state())
         handler.post { reply(replyTo, what, out) }

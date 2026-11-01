@@ -76,7 +76,8 @@ Los rituales viven en `.claude/skills/`: **`/inicio` · `/cierre` · `/instalar`
 | `docs/temas.md` | Cómo funciona y cómo se agrega un tema | al cambiar el contrato de temas |
 | `docs/desarrollo.md` | Entorno, compilar, instalar, depurar | al cambiar herramientas |
 | `docs/tv-guido-tcl/` | Historia de la TV, apps quitadas y cómo restaurarlas, respaldos | cada vez que se toca la TV |
-| `docs/specs/` | Specs (la v2 está COMPLETO; el panel de apps, en BORRADOR) | Arquitecto / brainstorming |
+| `docs/recientes.md` | El panel de apps abiertas (botón TCL Home) | al cambiar el panel |
+| `docs/specs/` | Specs (la v2 y el panel de apps, COMPLETO) | Arquitecto / brainstorming |
 | `docs/ideas-google-tv.md` | Ideas investigadas para mejorar la TV, para elegir | al investigar o al hacer una |
 
 **Reglas del sistema**: una sola narrativa por sesión (HANDOFF + CHANGELOG). Un número vive en UN archivo. Lo derivable del código o de git NO se escribe en un doc.

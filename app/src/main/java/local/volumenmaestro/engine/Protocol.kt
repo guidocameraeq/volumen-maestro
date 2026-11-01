@@ -22,6 +22,8 @@ object Protocol {
     const val IMPORT_BACKUP = 15
     const val PREPARE_UNINSTALL = 16
     const val GET_LOG = 17
+    const val CLOSE_APP = 18
+    const val CLOSE_ALL = 19
 
     const val K_RUNNING = "running"
     const val K_ENABLED = "enabled"
@@ -50,6 +52,7 @@ object Protocol {
     const val K_UPTIME = "uptime"
     const val K_FREED_STORAGE = "freedStorage"
     const val K_FREED_MEMORY = "freedMemory"
+    const val K_APPS = "apps"
 }
 
 enum class Level { OK, WARN, ERROR }

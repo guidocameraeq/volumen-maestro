@@ -21,6 +21,8 @@ data class Config(
     /** Código crudo del kernel del botón del atajo (getevent; Info del TCL RC813 = 0xC3). 0 = sin atajo. */
     val shortcutKey: Int = 0,
     val shortcutMode: ShortcutMode = ShortcutMode.LONG_PRESS,
+    /** TCL Home: un toque abre el panel de apps abiertas, dos vuelven a la app anterior. */
+    val appPanel: Boolean = true,
     val rebootEnabled: Boolean = false,
     val rebootDays: Set<DayOfWeek> = setOf(DayOfWeek.MONDAY),
     val rebootHour: Int = 5,
@@ -37,6 +39,7 @@ data class Config(
         put("showSide", showSide)
         put("shortcutKey", shortcutKey)
         put("shortcutMode", shortcutMode.name)
+        put("appPanel", appPanel)
         put("rebootEnabled", rebootEnabled)
         put("rebootDays", JSONArray(rebootDays.sorted().map { it.name }))
         put("rebootHour", rebootHour)
@@ -76,6 +79,7 @@ data class Config(
                 showSide = o.optBoolean("showSide", d.showSide),
                 shortcutKey = migrateShortcut(o.optInt("version", 1), o.optInt("shortcutKey", d.shortcutKey)),
                 shortcutMode = enumOrNull<ShortcutMode>(o.optString("shortcutMode")) ?: d.shortcutMode,
+                appPanel = o.optBoolean("appPanel", d.appPanel),
                 rebootEnabled = o.optBoolean("rebootEnabled", d.rebootEnabled),
                 rebootDays = days,
                 rebootHour = o.optInt("rebootHour", d.rebootHour).coerceIn(0, 23),
