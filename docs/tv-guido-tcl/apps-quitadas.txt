@@ -16,3 +16,12 @@ com.tcl.magiconnectfree
 com.tcl.hearaid
 com.tcl.tv.tclhome_passive
 com.tcl.dashboard
+com.tcl.usercenter
+com.tcl.guard
+com.android.providers.calendar
+com.google.android.syncadapters.calendar
+com.android.dynsystem
+com.android.managedprovisioning
+com.google.android.onetimeinitializer
+com.google.android.videos
+com.google.android.youtube.tvmusic

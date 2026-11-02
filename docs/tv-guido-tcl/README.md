@@ -36,7 +36,7 @@ Todo lo que se le hizo a la TV, cómo y por qué, para poder retomarla cualquier
 ### 1. Limpieza básica
 - `am force-stop com.plexapp.android` y `pm trim-caches 999G` (borra solo caché): RAM libre de 458 MB a 747 MB, espacio de 3,4 GB a 4,2 GB.
 
-### 2. Apps de fábrica desinstaladas (18)
+### 2. Apps de fábrica desinstaladas (27)
 Guido eligió cuáles. Se quitaron con `pm uninstall -k --user 0 <paquete>`: no se borran del sistema, solo de su usuario, y **se pueden restaurar**. La lista exacta está en [`apps-quitadas.txt`](apps-quitadas.txt):
 
 | Paquete | Qué era |
@@ -51,6 +51,13 @@ Guido eligió cuáles. Se quitaron con `pm uninstall -k --user 0 <paquete>`: no 
 | `com.android.printspooler`, `com.google.android.marvin.talkback` | Impresión, lector de pantalla |
 | `com.tcl.magiconnectfree`, `com.tcl.hearaid` | Magiconnect y ayuda auditiva (Guido no los usa) |
 | `com.tcl.tv.tclhome_passive` | Contenido de la pestaña TCL (se quitó intentando sacar esa pestaña) |
+| `com.tcl.dashboard` | Panel de cuenta TCL del botón TCL Home (01/11; ese botón ahora es de Volumen Maestro) |
+| `com.tcl.usercenter`, `com.tcl.guard` | Cuenta TCL y Safety Guard, el "limpiador" de TCL (01/11) |
+| `com.android.providers.calendar`, `com.google.android.syncadapters.calendar` | Calendario y su sincronización (01/11) |
+| `com.android.dynsystem`, `com.android.managedprovisioning`, `com.google.android.onetimeinitializer` | Actualización dinámica, aprovisionamiento de empresa, inicializador (01/11) |
+| `com.google.android.videos`, `com.google.android.youtube.tvmusic` | Tienda de películas de Google y YouTube Music (01/11; Guido no los usa) |
+
+El 01/11 Guido además **borró** (desinstalación común, sin vuelta atrás) dos apps que había instalado a mano: Saki Play (`play.saki.app`) y MX IPTV (`tv.mxliptv.app`). Después de quitar todo, la TV reinició sin errores.
 
 **Se dejaron a propósito**: Game Bar, Alexa (`com.tcl.smartalexa` y su servicio `com.tcl.ttvs`, que **no hay que tocar**), Netflix, Prime, YouTube Music, AirPlay, Miracast, Media Player, `com.tcl.partnercustomizer` (maneja el ícono "TCL Home" y probablemente los botones del control) y todo lo del sistema.
 
@@ -63,6 +70,7 @@ Resultado tras reiniciar: **894 MB de RAM libre**.
 - El "modo solo apps" de Google TV saca "Continue watching" y el Asistente: descartado.
 - **La pestaña "TCL"** del inicio: se probó quitar `tclhome_passive`, quitar `partnercustomizer`, reiniciar y borrar los datos del inicio (`pm clear com.google.android.apps.tv.launcherx`), todo junto. **No se va: la manda el servidor de Google por ser una TCL.** Se restauró `partnercustomizer`.
 - **El banner grande de Prime Video** arriba de todo: se apagaron las notificaciones de Prime (Settings → Apps → Prime Video → Notifications) y no cambió. También lo arma el servidor; Prime no tiene canales propios guardados en la TV.
+- **01/11**: en Ajustes → Cuentas y perfiles → la cuenta → Preferencias de contenido → **Apps y servicios** se apagó Prime Video (Prime sigue andando). La fila de Prime no se fue al momento (mirar en unos días). Se probó otra vez el **modo solo apps**: saca la fila de Prime y la pestaña TCL, pero también "Continue watching" y la búsqueda/voz de Google. Guido prefiere "Continue watching": se volvió atrás y el inicio quedó igual que antes (mismo orden de apps).
 - Borrar los datos del inicio reseteó el orden de las apps; se volvió a ordenar a mano con el modo "Reorder" según el respaldo [`respaldo-inicio/orden-apps.txt`](respaldo-inicio/orden-apps.txt).
 
 ### 4. Alexa

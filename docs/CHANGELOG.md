@@ -12,9 +12,10 @@
 
 ### Changed
 - En la TV: DNS privado con AdGuard (menos publicidad y rastreo; se deshace con `private_dns_mode off`).
+- En la TV: Prime Video apagado en las recomendaciones de la cuenta ("Apps y servicios").
 
 ### Removed
-- En la TV: `com.tcl.dashboard` (el panel de cuenta TCL que abría TCL Home), reversible y anotado en `apps-quitadas.txt`.
+- En la TV: `com.tcl.dashboard` (el panel de cuenta TCL que abría TCL Home) y otras 9 apps de fábrica, reversibles y anotadas en `apps-quitadas.txt`; Saki Play y MX IPTV borradas por Guido.
 
 ## 2026-11-01 — Volumen Maestro 2.2: el mudo de Disney+ y los temas de Noche de brujas
 

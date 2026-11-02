@@ -13,6 +13,7 @@
 - [ ] Probar un reinicio programado real (ponerlo 2-3 minutos adelante y apagar la TV con el control); confirmar que la pantalla no queda prendida después.
 
 ## 🟡 Cuando se pueda
+- [ ] Mirar en unos días si la fila de Prime Video del inicio se fue (Prime apagado en "Apps y servicios" el 01/11). Si sigue, ya no hay más vueltas sin perder "Continue watching".
 - [ ] Ajustar la curva por defecto si a Guido le resulta muy brusca o muy suave (hoy: Pareja, 0,5 dB por punto).
 - [ ] Auto-actualización desde los Releases de GitHub: descartada por ahora (cambios esporádicos; la firma está en el repo público). Revisar si se empieza a cambiar seguido.
 - [ ] Revisar el rendimiento de los temas más cargados (Espacial, Medieval, Candelabro) en la TV con `dumpsys gfxinfo local.volumenmaestro:motor`.

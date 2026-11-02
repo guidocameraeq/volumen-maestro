@@ -16,7 +16,7 @@
 ## Estado
 - TV: Volumen Maestro 2.3 ENCENDIDA, panel de apps prendido. Con la app encendida, `dumpsys media.audio_flinger | grep "effects for session"` da 8 (los 7 de TCL + nuestro Equalizer). Transición de Guido: Apagada.
 - Red: la TV está en "Yulius 4" (`192.168.0.219`); la PC a veces queda en "Domotics3" (ver `CLAUDE.md`).
-- Se quitó `com.tcl.dashboard` (anotado en `apps-quitadas.txt`).
+- 27 apps de fábrica quitadas en total (`apps-quitadas.txt`); Prime apagado en "Apps y servicios"; modo solo apps probado y descartado (saca "Continue watching").
 
 ## En curso
 - Nada a medias.
