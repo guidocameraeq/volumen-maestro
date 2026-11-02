@@ -25,3 +25,8 @@ com.android.managedprovisioning
 com.google.android.onetimeinitializer
 com.google.android.videos
 com.google.android.youtube.tvmusic
+com.tcl.interactive
+android.autoinstalls.config.google.gtvpai
+com.tcl.smartlink.core
+com.tcl.useragreement
+com.tcl.UpdatePeripheral

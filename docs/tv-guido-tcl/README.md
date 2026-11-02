@@ -36,7 +36,7 @@ Todo lo que se le hizo a la TV, cómo y por qué, para poder retomarla cualquier
 ### 1. Limpieza básica
 - `am force-stop com.plexapp.android` y `pm trim-caches 999G` (borra solo caché): RAM libre de 458 MB a 747 MB, espacio de 3,4 GB a 4,2 GB.
 
-### 2. Apps de fábrica desinstaladas (27)
+### 2. Apps de fábrica desinstaladas (32)
 Guido eligió cuáles. Se quitaron con `pm uninstall -k --user 0 <paquete>`: no se borran del sistema, solo de su usuario, y **se pueden restaurar**. La lista exacta está en [`apps-quitadas.txt`](apps-quitadas.txt):
 
 | Paquete | Qué era |
@@ -56,6 +56,8 @@ Guido eligió cuáles. Se quitaron con `pm uninstall -k --user 0 <paquete>`: no 
 | `com.android.providers.calendar`, `com.google.android.syncadapters.calendar` | Calendario y su sincronización (01/11) |
 | `com.android.dynsystem`, `com.android.managedprovisioning`, `com.google.android.onetimeinitializer` | Actualización dinámica, aprovisionamiento de empresa, inicializador (01/11) |
 | `com.google.android.videos`, `com.google.android.youtube.tvmusic` | Tienda de películas de Google y YouTube Music (01/11; Guido no los usa) |
+| `com.tcl.interactive`, `com.tcl.smartlink.core`, `android.autoinstalls.config.google.gtvpai` | Servicio de fondo de TCL (TIAS), instalador silencioso de TCL e instalaciones automáticas de "socios" (01/11, sacados de la lista de CleanYourTV para el G09) |
+| `com.tcl.useragreement`, `com.tcl.UpdatePeripheral` | Pantallas de términos de TCL y actualizador de barras de sonido TCL (el equipo es un Sony) (01/11) |
 
 El 01/11 Guido además **borró** (desinstalación común, sin vuelta atrás) dos apps que había instalado a mano: Saki Play (`play.saki.app`) y MX IPTV (`tv.mxliptv.app`). Después de quitar todo, la TV reinició sin errores.
 

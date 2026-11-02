@@ -2,6 +2,14 @@
 
 > Historia permanente. `/cierre` agrega una entrada AL TOPE en cada sesión. Orden descendente estricto, sin excepciones. Nada de versiones duplicadas en otros docs.
 
+## 2026-11-01 — CleanYourTV: comparación y 5 apps de TCL menos
+
+### Removed
+- En la TV: 5 apps de fábrica de TCL que la lista de CleanYourTV para el G09 apaga y acá seguían (TIAS, instalador silencioso, instalaciones de socios, términos, actualizador de barras de sonido). Reversibles, en `apps-quitadas.txt`.
+
+### Changed
+- `docs/ideas-google-tv.md`: la comparación con CleanYourTV hecha, con lo que queda y los datos útiles para esta TV.
+
 ## 2026-11-01 — El protector de pantalla y el nacimiento de Museum Slideshow
 
 ### Added

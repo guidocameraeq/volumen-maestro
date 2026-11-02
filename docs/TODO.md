@@ -8,8 +8,9 @@
 - (nada)
 
 ## 🟠 Importante
+- [ ] Tras el próximo reinicio de la TV, confirmar que arranca bien sin las 5 apps de TCL quitadas el 01/11 (motor, Alexa, Wi-Fi).
 - [ ] Guido: probar los 3 temas de Noche de brujas en pantalla de verdad ("Probar en pantalla"), con silencio incluido; que no se asome el cartel de TCL.
-- [ ] Ideas que quedan de `docs/ideas-google-tv.md` (opcionales): SmartTube desde su GitHub oficial, Wholphin, LocalSend, temporizador para dormir en la app.
+- [ ] Ideas que quedan de `docs/ideas-google-tv.md` (opcionales): SmartTube desde su GitHub oficial, Wholphin, LocalSend, temporizador para dormir en la app, probar el ajuste de dibujo `skiavk` (dato de CleanYourTV).
 - [ ] Probar un reinicio programado real (ponerlo 2-3 minutos adelante y apagar la TV con el control); confirmar que la pantalla no queda prendida después.
 
 ## 🟡 Cuando se pueda
