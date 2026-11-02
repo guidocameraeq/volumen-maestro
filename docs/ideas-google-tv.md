@@ -27,7 +27,7 @@ Recordatorio de las reglas (`CLAUDE.md`): Ambient, Game Bar, Alexa y el orden de
 - **S0undTV**: Twitch sin publicidad, con chat (probar en 2 GB).
 - **Stremio**: la app es legal; muchos complementos de la comunidad no lo son.
 - **AirScreen**: recibe AirPlay y Cast desde iPhone/Mac (resultados variables; lo protegido sale negro). La TV ya tiene la app de AirPlay de Amlogic.
-- **Aerial Views**: protector con videos aéreos tipo Apple. En Google TV se pone por ADB. Choca con Ambient con las fotos de Guido.
+- **Aerial Views**: protector con videos aéreos tipo Apple. En Google TV se pone por ADB. Choca con Ambient con las fotos de Guido. (01/11: en vez de esto, Guido hace su propio protector, Museum Slideshow, en `../museum-slideshow`.)
 - **Plexamp**: no tiene app para TV.
 
 ## Velocidad y limpieza

@@ -112,6 +112,13 @@ El valor original exacto de Netflix está en [`respaldo-inicio/audio-netflix-ori
 - Ya estaban: animaciones del sistema en 0,5×. No existen en Android 12 los servicios de publicidad de Google que sugieren algunas guías (`adservices`, `ondevicepersonalization`, `federatedcompute`).
 - Se probó y desinstaló **Dialogue Mode** (`local.dialoguemode`, de GitHub), usado solo para comprobar que los efectos de audio no alcanzaban a Netflix.
 
+### 9. Protector de pantalla: la TV acepta otro (01/11/2026)
+- El de Guido es el **Ambient de Google** con sus fotos: `screensaver_components` = `com.google.android.apps.tv.dreamx/.service.Backdrop`. Se activa a los 10 min (`screen_off_timeout` = 600000).
+- Los menús de Google TV solo ofrecen el Ambient, pero Android acepta otro: hay 3 instalados (Ambient, `com.android.dreams.basic/.Colors` y el de Jellyfin).
+- **Probado**: `settings put secure screensaver_components com.android.dreams.basic/com.android.dreams.basic.Colors` → `am start -n com.android.systemui/.Somnambulator` lo arrancó (`dumpsys dreams` lo mostró, captura con colores) → `service call dreams 2` lo despertó → se volvió al Ambient. Los fondos del Ambient no se tocan al cambiar.
+- **Para volver al Ambient**: `adb shell settings put secure screensaver_components com.google.android.apps.tv.dreamx/.service.Backdrop`.
+- De acá nació **Museum Slideshow** (repo hermano `../museum-slideshow`): galería de arte propia que también es protector.
+
 ## Cosas que NO funcionan (para no volver a probarlas)
 - Programar el control de la TV para que maneje el Sony: el RC813 no se puede programar y la TV no tiene emisor infrarrojo.
 - Ver el volumen del Sony con Dolby: el Dolby pasa comprimido (ver `audio-dolby.md`). Haría falta un emisor infrarrojo por Wi-Fi (Broadlink); Guido no lo quiere.

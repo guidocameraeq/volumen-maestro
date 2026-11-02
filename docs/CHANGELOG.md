@@ -2,6 +2,14 @@
 
 > Historia permanente. `/cierre` agrega una entrada AL TOPE en cada sesión. Orden descendente estricto, sin excepciones. Nada de versiones duplicadas en otros docs.
 
+## 2026-11-01 — El protector de pantalla y el nacimiento de Museum Slideshow
+
+### Added
+- `docs/tv-guido-tcl/README.md` punto 9: la TV acepta otro protector de pantalla; cómo se cambia, cómo se prueba y cómo se vuelve al Ambient.
+
+### Changed
+- Volumen Maestro queda como "la casa de la tele"; la galería de arte de Guido vive en su propio repo privado, `../museum-slideshow` (SPEC-0 READY). La TV no cambió: el protector sigue siendo el Ambient.
+
 ## 2026-11-01 — Volumen Maestro 2.3: el botón TCL Home hace de "Alt-Tab"
 
 ### Added
