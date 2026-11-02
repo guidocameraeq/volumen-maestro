@@ -10,6 +10,9 @@
 ### Fixed
 - Al instalar o quitar una app, el lector del control quedaba duplicado y cada toque llegaba dos veces (también afectaba al atajo de Info).
 
+### Changed
+- En la TV: DNS privado con AdGuard (menos publicidad y rastreo; se deshace con `private_dns_mode off`).
+
 ### Removed
 - En la TV: `com.tcl.dashboard` (el panel de cuenta TCL que abría TCL Home), reversible y anotado en `apps-quitadas.txt`.
 

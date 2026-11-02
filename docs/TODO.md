@@ -9,7 +9,7 @@
 
 ## 🟠 Importante
 - [ ] Guido: probar los 3 temas de Noche de brujas en pantalla de verdad ("Probar en pantalla"), con silencio incluido; que no se asome el cartel de TCL.
-- [ ] Revisar las ideas de la investigación de Google TV (`docs/ideas-google-tv.md`) y elegir cuáles hacer.
+- [ ] Ideas que quedan de `docs/ideas-google-tv.md` (opcionales): SmartTube desde su GitHub oficial, Wholphin, LocalSend, temporizador para dormir en la app.
 - [ ] Probar un reinicio programado real (ponerlo 2-3 minutos adelante y apagar la TV con el control); confirmar que la pantalla no queda prendida después.
 
 ## 🟡 Cuando se pueda

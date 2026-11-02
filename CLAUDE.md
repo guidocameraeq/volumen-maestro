@@ -19,7 +19,7 @@ Este repo también guarda **toda la historia de esa TV** (`docs/tv-guido-tcl/`):
 | Qué | Valor |
 |---|---|
 | TV | TCL "Smart TV Pro" (G09), Google TV, Android TV 12, Amlogic, 2 GB RAM |
-| IP / puerto ADB | `192.168.0.219:5555` en la red Wi-Fi "Yulius 4" (puerta de enlace 192.168.0.1). Si no conecta, primero mirar que la PC esté en esa red (a veces queda en "Domotics3", 192.168.33.x); si la IP cambió, buscar el puerto 5555 abierto en la red |
+| IP / puerto ADB | `192.168.0.219:5555` en la red Wi-Fi "Yulius" (Windows la muestra como "Yulius 4"; puerta de enlace 192.168.0.1). Si no conecta, primero mirar que la PC esté en esa red (a veces queda en "Domotics3", 192.168.33.x); si la IP cambió, buscar el puerto 5555 abierto en la red |
 | adb | Platform-Tools instalado con winget: `%LOCALAPPDATA%\Microsoft\WinGet\Packages\Google.PlatformTools_Microsoft.Winget.Source_8wekyb3d8bbwe\platform-tools\adb.exe` |
 | JDK | Temurin 17: `C:\Program Files\Eclipse Adoptium\jdk-17*` → `$env:JAVA_HOME` |
 | Android SDK | `%LOCALAPPDATA%\Android\Sdk` (platform 34, build-tools 34.0.0) |

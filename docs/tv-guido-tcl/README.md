@@ -36,7 +36,7 @@ Todo lo que se le hizo a la TV, cómo y por qué, para poder retomarla cualquier
 ### 1. Limpieza básica
 - `am force-stop com.plexapp.android` y `pm trim-caches 999G` (borra solo caché): RAM libre de 458 MB a 747 MB, espacio de 3,4 GB a 4,2 GB.
 
-### 2. Apps de fábrica desinstaladas (17)
+### 2. Apps de fábrica desinstaladas (18)
 Guido eligió cuáles. Se quitaron con `pm uninstall -k --user 0 <paquete>`: no se borran del sistema, solo de su usuario, y **se pueden restaurar**. La lista exacta está en [`apps-quitadas.txt`](apps-quitadas.txt):
 
 | Paquete | Qué era |
@@ -90,9 +90,17 @@ Resultado tras reiniciar: **894 MB de RAM libre**.
 El valor original exacto de Netflix está en [`respaldo-inicio/audio-netflix-original.txt`](respaldo-inicio/audio-netflix-original.txt) (la app también lo guarda). "Digital Audio Out" estaba en PCM de fábrica; Guido lo pasó a Auto durante las pruebas, y Auto es lo que deja el modo APAGADO.
 
 ### 7. Volumen Maestro instalado
-- Versión 1 (31/10, Java sin Gradle) → versión 2 (31/10, Compose, 5 pestañas, 11 temas). Se actualiza siempre "encima" con la misma firma.
+- Versión 1 (31/10, Java sin Gradle) → versión 2 (31/10, Compose, 5 pestañas, 11 temas) → 2.3 (01/11: ecualizador de la mezcla, 15 temas, panel de apps con TCL Home). Se actualiza siempre "encima" con la misma firma.
 - Servicio de accesibilidad `local.volumenmaestro/.VolumeService` habilitado. La app tiene su propia clave ADB autorizada en la TV ("volumen-maestro@tv").
-- Tema elegido: Sable láser rojo. Curva: pareja, 0,5 dB por punto.
+- Tema elegido: Colina espiral (01/11). Curva: pareja, 0,5 dB por punto. Transición: apagada.
+- El 01/11 se quitó `com.tcl.dashboard` (el panel de cuenta TCL que abría el botón TCL Home): ahora ese botón lo usa Volumen Maestro.
+
+### 8. DNS privado con AdGuard (01/11/2026)
+- `settings put global private_dns_specifier dns.adguard-dns.com` + `settings put global private_dns_mode hostname`. Antes estaba sin configurar (`null`, o sea automático).
+- Bloquea dominios de publicidad y rastreo en toda la TV (comprobado: `doubleclick.net` no resuelve). No saca la publicidad de YouTube.
+- Guido probó Netflix, Disney+, Prime, Max, Plex y YouTube: andan.
+- **Para deshacerlo**: `adb shell settings put global private_dns_mode off` (o Ajustes → Red → DNS privado).
+- Ya estaban: animaciones del sistema en 0,5×. No existen en Android 12 los servicios de publicidad de Google que sugieren algunas guías (`adservices`, `ondevicepersonalization`, `federatedcompute`).
 - Se probó y desinstaló **Dialogue Mode** (`local.dialoguemode`, de GitHub), usado solo para comprobar que los efectos de audio no alcanzaban a Netflix.
 
 ## Cosas que NO funcionan (para no volver a probarlas)

@@ -2,6 +2,8 @@
 
 Lo que trajeron 8 investigadores (Sonnet) sobre qué le hace la gente a sus Google TV. **Nada de esto se probó en la TV de Guido**: son ideas para elegir. Fuentes: blogs, guías de TCL y Google, GitHub; casi no pudieron abrir Reddit/XDA. Lo que dice "sin confirmar" no tenía buena fuente.
 
+**Hecho el 01/11/2026**: DNS privado con AdGuard (aplicado, las apps andan). Ya estaban: animaciones a 0,5×. No aplica en esta TV: apagar los servicios de publicidad de Google (no existen en Android 12). Descartado por Guido: avisos desde el celu.
+
 Recordatorio de las reglas (`CLAUDE.md`): Ambient, Game Bar, Alexa y el orden de apps no se tocan sin "esto cambio / esto preservo"; todo lo que se quite es reversible y se anota en `tv-guido-tcl/apps-quitadas.txt`.
 
 ## ⭐ Las mejores ideas (la recomendación)

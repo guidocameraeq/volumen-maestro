@@ -11,7 +11,7 @@
 - Botón TCL Home como "Alt-Tab" (Volumen Maestro 2.3, ADR-014, `docs/recientes.md`): un toque abre el panel de apps recientes, dos toques vuelven a la anterior. Guido lo probó con el control. Se quitó `com.tcl.dashboard` (reversible).
 - Arreglado el lector del control duplicado al instalar/quitar apps (cada toque llegaba doble).
 - Volumen Maestro 2.3 (versionCode 5) instalada en la TV.
-- 8 investigadores (Sonnet) buscaron ideas para mejorar la TV: resumen en `docs/ideas-google-tv.md`.
+- 8 investigadores (Sonnet) buscaron ideas para mejorar la TV (`docs/ideas-google-tv.md`). Aplicado: DNS privado con AdGuard (las apps andan). Publicada la 2.3 en Releases.
 
 ## Estado
 - TV: Volumen Maestro 2.3 ENCENDIDA, panel de apps prendido. Con la app encendida, `dumpsys media.audio_flinger | grep "effects for session"` da 8 (los 7 de TCL + nuestro Equalizer). Transición de Guido: Apagada.
@@ -22,7 +22,7 @@
 - Nada a medias.
 
 ## Próximo paso CONCRETO
-Con Guido: repasar `docs/ideas-google-tv.md` y elegir cuáles hacer (las recomendadas: SmartTube desde su GitHub, DNS con AdGuard, animaciones 0,5×, temporizador para dormir en la app). Antes, que pruebe los temas de Noche de brujas en pantalla.
+Que Guido pruebe los temas de Noche de brujas en pantalla (con silencio). Después, si quiere, otra idea de `docs/ideas-google-tv.md` (SmartTube desde su GitHub, temporizador para dormir).
 
 ## Bloqueos
 - Ninguno.
