@@ -12,7 +12,7 @@
 
 ### Changed
 - En la TV: DNS privado con AdGuard (menos publicidad y rastreo; se deshace con `private_dns_mode off`).
-- En la TV: Prime Video apagado en las recomendaciones de la cuenta ("Apps y servicios").
+- En la TV: Prime Video apagado en las recomendaciones de la cuenta ("Apps y servicios") y "Autoplay video" del inicio apagado.
 
 ### Removed
 - En la TV: `com.tcl.dashboard` (el panel de cuenta TCL que abría TCL Home) y otras 9 apps de fábrica, reversibles y anotadas en `apps-quitadas.txt`; Saki Play y MX IPTV borradas por Guido.

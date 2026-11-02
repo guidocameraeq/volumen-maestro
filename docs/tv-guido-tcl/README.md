@@ -71,6 +71,7 @@ Resultado tras reiniciar: **894 MB de RAM libre**.
 - **La pestaña "TCL"** del inicio: se probó quitar `tclhome_passive`, quitar `partnercustomizer`, reiniciar y borrar los datos del inicio (`pm clear com.google.android.apps.tv.launcherx`), todo junto. **No se va: la manda el servidor de Google por ser una TCL.** Se restauró `partnercustomizer`.
 - **El banner grande de Prime Video** arriba de todo: se apagaron las notificaciones de Prime (Settings → Apps → Prime Video → Notifications) y no cambió. También lo arma el servidor; Prime no tiene canales propios guardados en la TV.
 - **01/11**: en Ajustes → Cuentas y perfiles → la cuenta → Preferencias de contenido → **Apps y servicios** se apagó Prime Video (Prime sigue andando). La fila de Prime no se fue al momento (mirar en unos días). Se probó otra vez el **modo solo apps**: saca la fila de Prime y la pestaña TCL, pero también "Continue watching" y la búsqueda/voz de Google. Guido prefiere "Continue watching": se volvió atrás y el inicio quedó igual que antes (mismo orden de apps).
+- **01/11**: en la misma pantalla de la cuenta se apagó **"Autoplay video"** (avances, canales Freeplay y algunas publicidades que arrancaban solos en el inicio). Es un ajuste del inicio de Google TV; los avances dentro de cada app tienen su propio ajuste.
 - Borrar los datos del inicio reseteó el orden de las apps; se volvió a ordenar a mano con el modo "Reorder" según el respaldo [`respaldo-inicio/orden-apps.txt`](respaldo-inicio/orden-apps.txt).
 
 ### 4. Alexa
