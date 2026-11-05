@@ -13,7 +13,7 @@
 - [ ] Ideas que quedan de `docs/ideas-google-tv.md` (opcionales): SmartTube desde su GitHub oficial, Wholphin, LocalSend, temporizador para dormir en la app, probar el ajuste de dibujo `skiavk` (dato de CleanYourTV).
 
 ## 🟡 Cuando se pueda
-- [ ] Reinicio al apagar: acortar el rato con la pantalla prendida al arrancar (hoy la app la apaga a los ~15 s de arrancar el motor), si a Guido le molesta de noche.
+- [ ] Reinicio al apagar, si a Guido le molesta la pantalla prendida de noche: bajar la espera de la app (hoy ~15 s desde que arranca el motor) a 2-3 s, y mirar si "Power on behavior" (Ajustes → Sistema → Power & Energy) la hace arrancar apagada.
 - [ ] Ajustar la curva por defecto si a Guido le resulta muy brusca o muy suave (hoy: Pareja, 0,5 dB por punto).
 - [ ] Auto-actualización desde los Releases de GitHub: descartada por ahora (cambios esporádicos; la firma está en el repo público). Revisar si se empieza a cambiar seguido.
 - [ ] Revisar el rendimiento de los temas más cargados (Espacial, Medieval, Candelabro) en la TV con `dumpsys gfxinfo local.volumenmaestro:motor`.

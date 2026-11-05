@@ -19,7 +19,7 @@
 - Nada a medias.
 
 ## Próximo paso CONCRETO
-El lunes 09/11 o después: confirmar el reinicio al apagar en Doze (primer punto de `docs/TODO.md`), que es lo único sin probar. Después: Guido prueba los temas de Noche de brujas en pantalla.
+Guido apaga la TV el domingo 08/11 después de las 22:00, mira qué se ve durante el reinicio y lo cuenta. Con eso: confirmar el reinicio en Doze (primer punto de `docs/TODO.md`, lo único sin probar) y decidir si hace falta acortar el rato con la pantalla prendida. Después: Guido prueba los temas de Noche de brujas en pantalla.
 
 ## Bloqueos
 - Ninguno.
