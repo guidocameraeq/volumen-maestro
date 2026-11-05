@@ -97,7 +97,7 @@ class EngineService : Service() {
         putInt(Protocol.K_LEARNED, Engine.learnedKey)
         putInt(Protocol.K_REJECTED, Engine.rejectedKey)
         putBoolean(Protocol.K_BACKUP_FOUND, Engine.backupFound != null)
-        putLong(Protocol.K_NEXT_REBOOT, RebootScheduler.nextMillis(Engine.config) ?: 0L)
+        putLong(Protocol.K_NEXT_REBOOT, RebootScheduler.nextNightMillis(Engine.config, Engine.lastRebootNight) ?: 0L)
     }
 
     private fun reply(to: Messenger?, what: Int, data: Bundle) {

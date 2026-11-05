@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.tv.material3.Text
@@ -75,6 +76,9 @@ fun PillButton(
     selected: Boolean = false,
     primary: Boolean = false,
     danger: Boolean = false,
+    /** false para botones angostos (los días): la selección se ve igual por el borde y el color. */
+    check: Boolean = true,
+    horizontalPadding: Dp = 22.dp,
 ) {
     val interaction = remember { MutableInteractionSource() }
     val focused by interaction.collectIsFocusedAsState()
@@ -94,11 +98,11 @@ fun PillButton(
             .background(bg, RoundedCornerShape(50))
             .then(if (selected && !focused) Modifier.border(2.dp, Palette.accent, RoundedCornerShape(50)) else Modifier)
             .clickable(interactionSource = interaction, indication = null, onClick = onClick)
-            .padding(horizontal = 22.dp, vertical = 11.dp),
+            .padding(horizontal = horizontalPadding, vertical = 11.dp),
         contentAlignment = Alignment.Center,
     ) {
         Text(
-            (if (selected) "✓ " else "") + text,
+            (if (selected && check) "✓ " else "") + text,
             color = Palette.text,
             fontSize = 16.sp,
             fontWeight = if (selected || primary) FontWeight.SemiBold else FontWeight.Normal,

@@ -3,9 +3,6 @@
 
     <!-- Conexión ADB local (127.0.0.1:5555) para los comandos con permisos de shell. -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- Reinicio programado; el permiso se concede por ADB con appops. -->
-    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
     <!-- Ecualizador plano sobre la mezcla general (sesión 0) que controla el volumen, ADR-013. -->
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
 
@@ -66,11 +63,6 @@
 
         <service
             android:name=".engine.EngineService"
-            android:exported="false"
-            android:process=":motor" />
-
-        <receiver
-            android:name=".system.RebootReceiver"
             android:exported="false"
             android:process=":motor" />
     </application>

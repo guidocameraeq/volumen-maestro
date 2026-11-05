@@ -27,6 +27,8 @@ import local.volumenmaestro.system.RebootScheduler
 import java.io.File
 import java.io.IOException
 import java.security.KeyPair
+import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.concurrent.Executors
 import kotlin.math.abs
 
@@ -40,6 +42,7 @@ object Engine {
     private const val WATCHDOG_MS = 10_000L
     private const val LONG_PRESS_MS = 2_000L
     private const val LEARN_TIMEOUT_MS = 20_000L
+    private const val KEY_LAST_REBOOT_NIGHT = "reboot_last_night"
 
     val log = EventLog()
     val main = Handler(Looper.getMainLooper())
@@ -108,6 +111,7 @@ object Engine {
             addAction(VOLUME_CHANGED)
             addAction(MUTE_CHANGED)
             addAction(Intent.ACTION_SCREEN_ON)
+            addAction(Intent.ACTION_SCREEN_OFF)
         })
         receiverRegistered = true
 
@@ -122,7 +126,6 @@ object Engine {
             log.add("Motor iniciado")
             try {
                 if (!store.exists) backupFound = store.readBackup(shell.commands)
-                shell.commands.run("appops set ${app.packageName} SCHEDULE_EXACT_ALARM allow")
                 incompatible = master.read() == null
                 if (incompatible) log.add("El volumen maestro no responde: TV incompatible")
                 handleRebootMarker()
@@ -134,7 +137,7 @@ object Engine {
                 log.add(status)
             }
             applyVolume(0)
-            RebootScheduler.schedule(app, config)
+            RebootScheduler.cancelLegacyAlarms(app)
             refreshHealth()
         }
         main.postDelayed(watchdog, WATCHDOG_MS)
@@ -162,6 +165,7 @@ object Engine {
         override fun onReceive(context: Context, intent: Intent) {
             when (intent.action) {
                 Intent.ACTION_SCREEN_ON -> onScreenOn()
+                Intent.ACTION_SCREEN_OFF -> onScreenOff()
                 else -> {
                     val stream = intent.getIntExtra("android.media.EXTRA_VOLUME_STREAM_TYPE", -1)
                     if (stream == AudioManager.STREAM_MUSIC) onTvVolumeChanged()
@@ -270,10 +274,10 @@ object Engine {
             old.zeroIsSilence != newConfig.zeroIsSilence
         ) applyVolume(newConfig.transition.millis)
         if (old.rebootEnabled != newConfig.rebootEnabled || old.rebootDays != newConfig.rebootDays ||
-            old.rebootHour != newConfig.rebootHour || old.rebootMinute != newConfig.rebootMinute
+            old.rebootHour != newConfig.rebootHour || old.rebootMinute != newConfig.rebootMinute ||
+            old.rebootOncePerWeek != newConfig.rebootOncePerWeek
         ) {
-            RebootScheduler.schedule(app, newConfig)
-            log.add(if (newConfig.rebootEnabled) "Reinicio programado actualizado" else "Reinicio programado apagado")
+            log.add(if (newConfig.rebootEnabled) "Reinicio al apagar actualizado" else "Reinicio al apagar apagado")
         }
         commands.execute {
             try {
@@ -367,10 +371,10 @@ object Engine {
             list += if (ok) HealthCheck("netflix", "Netflix sin Dolby", Level.OK, "Netflix manda audio común.")
             else HealthCheck("netflix", "Netflix sin Dolby", Level.WARN, "Netflix volvió a mandar Dolby.", "Arreglar")
         }
+        // Solo informa: el modo lo elige el usuario en el menú de la TV (ADR-015).
         list += if (read("settings get system tcl_sys_network_standby_enabled") == "1")
-            HealthCheck("standby", "Reposo con red", Level.OK, "Network Standby: Alexa y el reinicio programado funcionan.")
-        else HealthCheck("standby", "Reposo con red", Level.WARN,
-            "Activá Settings → System → Power & Energy → TV Standby → Standby Mode → Network Standby.")
+            HealthCheck("standby", "Reposo", Level.OK, "Con red: Alexa y el Chromecast pueden prender la TV; la red la despierta de a ratos.")
+        else HealthCheck("standby", "Reposo", Level.OK, "Sin red: la TV duerme del todo; Alexa no la puede prender.")
         list += if (!incompatible) HealthCheck("master", "Volumen maestro", Level.OK, "Responde.")
         else HealthCheck("master", "Volumen maestro", Level.ERROR,
             "No responde: puede que una actualización de la TV lo haya cambiado.", "Volver a probar")
@@ -421,43 +425,46 @@ object Engine {
         try { shell.commands.reboot() } catch (e: IOException) { log.add("No se pudo reiniciar: ${e.message}") }
     }
 
-    /** Alarma del reinicio programado: reinicia si la TV está apagada; si no, espera hasta 3 h. */
-    fun onRebootAlarm(context: Context, retry: Boolean) {
-        if (!running || !config.rebootEnabled) return
-        val pm = context.getSystemService(PowerManager::class.java)
-        val wake = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "volumenmaestro:reinicio")
-        wake.acquire(60_000)
-        val now = System.currentTimeMillis()
-        if (!retry) prefs.edit().putLong("reboot_deadline", now + RebootScheduler.MAX_WAIT_MS).apply()
-        val deadline = prefs.getLong("reboot_deadline", now)
-        if (!pm.isInteractive) {
-            prefs.edit().remove("reboot_deadline").apply()
-            File(app.filesDir, "reboot_marker").writeText(now.toString())
-            log.add("Reinicio programado: reiniciando")
-            commands.execute {
-                try { shell.commands.reboot() } catch (e: IOException) { log.add("No se pudo reiniciar: ${e.message}") }
-                wake.release()
+    /** Última noche en que se reinició al apagar (ver [RebootScheduler]), o null si nunca. */
+    val lastRebootNight: LocalDate?
+        get() = if (::prefs.isInitialized && prefs.contains(KEY_LAST_REBOOT_NIGHT))
+            LocalDate.ofEpochDay(prefs.getLong(KEY_LAST_REBOOT_NIGHT, 0)) else null
+
+    /**
+     * Al apagar la TV: si es una noche elegida y todavía no se reinició, reinicia en el momento.
+     * No se puede esperar: TCL suelta los wakelocks de las apps y duerme la TV a ~1,3 s de apretar
+     * el botón (ADR-016). Si el hilo quedara dormido antes de reiniciar, al despertar la pantalla ya
+     * está prendida y no reinicia: la noche queda sin marcar y se reintenta la próxima vez que se apague.
+     */
+    private fun onScreenOff() {
+        val now = LocalDateTime.now()
+        if (!RebootScheduler.shouldReboot(now, config, lastRebootNight)) return
+        val night = RebootScheduler.nightOf(now, config.rebootDays, config.rebootHour, config.rebootMinute) ?: return
+        prefs.edit().putLong(KEY_LAST_REBOOT_NIGHT, night.toEpochDay()).commit()
+        val marker = File(app.filesDir, "reboot_marker")
+        marker.writeText(System.currentTimeMillis().toString())
+        log.add("TV apagada de noche: reiniciando")
+        commands.execute {
+            val failed = when {
+                app.getSystemService(PowerManager::class.java).isInteractive -> "la TV se prendió antes"
+                else -> try { shell.commands.reboot(); null } catch (e: IOException) { e.message ?: e.toString() }
             }
-            return
+            if (failed != null) {
+                log.add("Reinicio al apagar no hecho: $failed")
+                prefs.edit().remove(KEY_LAST_REBOOT_NIGHT).apply()
+                marker.delete()
+            }
         }
-        if (now < deadline) {
-            RebootScheduler.scheduleRetry(context)
-        } else {
-            prefs.edit().remove("reboot_deadline").apply()
-            log.add("Reinicio programado salteado: la TV estuvo en uso")
-            RebootScheduler.schedule(context, config)
-        }
-        wake.release()
     }
 
-    /** Después de un reinicio programado, si la pantalla se prendió sola, la vuelve a apagar. */
+    /** Después de un reinicio al apagar, si la pantalla se prendió sola, la vuelve a apagar. */
     private fun handleRebootMarker() {
         val marker = File(app.filesDir, "reboot_marker")
         if (!marker.exists()) return
         val at = marker.readText().toLongOrNull() ?: 0L
         marker.delete()
         if (System.currentTimeMillis() - at > 20 * 60 * 1000) return
-        log.add("Reinicio programado hecho")
+        log.add("Reinicio al apagar hecho")
         Thread.sleep(15_000)
         if (app.getSystemService(PowerManager::class.java).isInteractive) {
             shell.commands.run("input keyevent KEYCODE_SLEEP")
@@ -590,7 +597,6 @@ object Engine {
             AudioSetup.disable(shell.commands, prefs)
             master.setTarget(1f, 0)
             mix.release()
-            RebootScheduler.cancelAll(app)
             val component = "${app.packageName}/${VolumeService::class.java.name}"
             val shortComponent = "${app.packageName}/.VolumeService"
             val current = shell.commands.run("settings get secure enabled_accessibility_services").trim()

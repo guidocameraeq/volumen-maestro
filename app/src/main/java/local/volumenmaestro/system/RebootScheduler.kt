@@ -2,65 +2,73 @@ package local.volumenmaestro.system
 
 import android.app.AlarmManager
 import android.app.PendingIntent
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import local.volumenmaestro.settings.Config
 import java.time.DayOfWeek
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 
-/** Calcula y programa el reinicio semanal. */
+/**
+ * Reinicio al apagar: en los días elegidos, la primera vez que se apaga la TV desde la hora elegida
+ * hasta las 06:00 siguientes ("la noche" de ese día), se reinicia. No usa alarmas: en reposo sin red
+ * (Doze, ADR-015) nada despierta a la TV para que suenen.
+ */
 object RebootScheduler {
-    const val ACTION_REBOOT = "local.volumenmaestro.REBOOT"
-    const val ACTION_RETRY = "local.volumenmaestro.REBOOT_RETRY"
-    /** Si la TV está en uso a la hora programada, se espera hasta esto a que se apague. */
-    const val MAX_WAIT_MS = 3 * 60 * 60 * 1000L
-    const val RETRY_MS = 10 * 60 * 1000L
+    /** La noche de un día termina a esta hora. */
+    const val NIGHT_END_HOUR = 6
 
-    /** Próximo momento programado estrictamente después de [now], o null si no hay días elegidos. */
-    fun next(now: LocalDateTime, days: Set<DayOfWeek>, hour: Int, minute: Int): LocalDateTime? {
-        if (days.isEmpty()) return null
-        for (offset in 0..7) {
-            val candidate = now.toLocalDate().plusDays(offset.toLong()).atTime(hour, minute)
-            if (candidate.dayOfWeek in days && candidate.isAfter(now)) return candidate
+    /** Día elegido cuya noche contiene a [now], o null si [now] no cae en ninguna. */
+    fun nightOf(now: LocalDateTime, days: Set<DayOfWeek>, hour: Int, minute: Int): LocalDate? {
+        for (back in 0L..1L) {
+            val day = now.toLocalDate().minusDays(back)
+            if (day.dayOfWeek !in days) continue
+            val start = day.atTime(hour, minute)
+            val end = if (hour < NIGHT_END_HOUR) day.atTime(NIGHT_END_HOUR, 0) else day.plusDays(1).atTime(NIGHT_END_HOUR, 0)
+            if (!now.isBefore(start) && now.isBefore(end)) return day
         }
         return null
     }
 
-    fun nextMillis(config: Config, zone: ZoneId = ZoneId.systemDefault()): Long? {
-        if (!config.rebootEnabled) return null
-        val n = next(LocalDateTime.now(zone), config.rebootDays, config.rebootHour, config.rebootMinute) ?: return null
-        return n.atZone(zone).toInstant().toEpochMilli()
+    /** ¿Hay que reiniciar si se apaga la TV en [now]? [lastNight] es la última noche en que se reinició. */
+    fun shouldReboot(now: LocalDateTime, config: Config, lastNight: LocalDate?): Boolean {
+        if (!config.rebootEnabled) return false
+        val night = nightOf(now, config.rebootDays, config.rebootHour, config.rebootMinute) ?: return false
+        if (lastNight == null) return true
+        val daysSince = night.toEpochDay() - lastNight.toEpochDay()
+        return if (config.rebootOncePerWeek) daysSince >= 7 else daysSince >= 1
     }
 
-    fun schedule(context: Context, config: Config) {
-        cancel(context, ACTION_REBOOT)
-        val at = nextMillis(config) ?: return
-        set(context, ACTION_REBOOT, at)
+    /**
+     * Comienzo de la próxima noche en que apagar la TV la reinicia (la actual si ya empezó y todavía
+     * no se reinició), o null si no hay días elegidos o el reinicio está apagado.
+     */
+    fun nextNight(now: LocalDateTime, config: Config, lastNight: LocalDate?): LocalDateTime? {
+        if (!config.rebootEnabled || config.rebootDays.isEmpty()) return null
+        for (offset in -1L..14L) {
+            val day = now.toLocalDate().plusDays(offset)
+            if (day.dayOfWeek !in config.rebootDays) continue
+            val start = day.atTime(config.rebootHour, config.rebootMinute)
+            val end = if (config.rebootHour < NIGHT_END_HOUR) day.atTime(NIGHT_END_HOUR, 0)
+                else day.plusDays(1).atTime(NIGHT_END_HOUR, 0)
+            if (!now.isBefore(end)) continue
+            if (shouldReboot(maxOf(now, start), config, lastNight)) return start
+        }
+        return null
     }
 
-    fun scheduleRetry(context: Context) = set(context, ACTION_RETRY, System.currentTimeMillis() + RETRY_MS)
+    fun nextNightMillis(config: Config, lastNight: LocalDate?, zone: ZoneId = ZoneId.systemDefault()): Long? =
+        nextNight(LocalDateTime.now(zone), config, lastNight)?.atZone(zone)?.toInstant()?.toEpochMilli()
 
-    fun cancelAll(context: Context) {
-        cancel(context, ACTION_REBOOT)
-        cancel(context, ACTION_RETRY)
-    }
-
-    private fun set(context: Context, action: String, at: Long) {
+    /** Cancela las alarmas del reinicio a hora fija que dejó la versión 2.3 (su receptor ya no existe). */
+    fun cancelLegacyAlarms(context: Context) {
         val am = context.getSystemService(AlarmManager::class.java)
-        val pi = intent(context, action)
-        val exactAllowed = Build.VERSION.SDK_INT < Build.VERSION_CODES.S || am.canScheduleExactAlarms()
-        if (exactAllowed) am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi)
-        else am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi)
+        for (action in listOf("local.volumenmaestro.REBOOT", "local.volumenmaestro.REBOOT_RETRY")) {
+            val intent = Intent(action).setComponent(ComponentName(context.packageName, "local.volumenmaestro.system.RebootReceiver"))
+            PendingIntent.getBroadcast(context, action.hashCode(), intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_NO_CREATE)
+                ?.let { am.cancel(it); it.cancel() }
+        }
     }
-
-    private fun cancel(context: Context, action: String) =
-        context.getSystemService(AlarmManager::class.java).cancel(intent(context, action))
-
-    private fun intent(context: Context, action: String): PendingIntent = PendingIntent.getBroadcast(
-        context, action.hashCode(),
-        Intent(context, RebootReceiver::class.java).setAction(action),
-        PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
-    )
 }

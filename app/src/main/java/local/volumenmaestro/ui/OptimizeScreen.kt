@@ -28,6 +28,7 @@ import local.volumenmaestro.engine.Protocol
 import local.volumenmaestro.settings.Config
 import java.time.DayOfWeek
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -121,58 +122,58 @@ private val DAYS = listOf(
     DayOfWeek.FRIDAY to "V", DayOfWeek.SATURDAY to "S", DayOfWeek.SUNDAY to "D",
 )
 
-private enum class Frequency(val label: String, val days: Set<DayOfWeek>?) {
-    DAILY("Todos los días", DayOfWeek.entries.toSet()),
-    WEEKLY("1 vez por semana", setOf(DayOfWeek.MONDAY)),
-    TWICE("2 veces por semana", setOf(DayOfWeek.MONDAY, DayOfWeek.THURSDAY)),
-    CUSTOM("Personalizado", null),
-}
+/** Paso de la hora del reinicio, en minutos. */
+private const val TIME_STEP = 30
 
-private fun frequencyOf(days: Set<DayOfWeek>) =
-    Frequency.entries.firstOrNull { it.days == days } ?: Frequency.CUSTOM
+private fun nextRebootText(nextMillis: Long, c: Config): String {
+    if (nextMillis <= 0) return "Elegí al menos un día."
+    val zone = ZoneId.systemDefault()
+    val start = Instant.ofEpochMilli(nextMillis).atZone(zone)
+    val today = LocalDate.now(zone)
+    val hour = String.format("%02d:%02d", c.rebootHour, c.rebootMinute)
+    val day = when (start.toLocalDate()) {
+        today -> "Esta noche"
+        today.minusDays(1) -> "Esta noche" // la noche de ayer sigue hasta las 6
+        today.plusDays(1) -> "Mañana"
+        else -> DateTimeFormatter.ofPattern("EEEE d 'de' MMMM", Locale("es")).format(start).replaceFirstChar { it.uppercase() }
+    }
+    return "Próximo: $day, si la apagás desde las $hour"
+}
 
 @Composable
 private fun RebootSection(state: EngineState, client: EngineClient) {
     val c = state.config
     fun set(new: Config) = client.setConfig(new)
-    Section("Reinicio programado", Modifier.fillMaxWidth()) {
-        ToggleRow("Reiniciar automáticamente", c.rebootEnabled, { set(c.copy(rebootEnabled = it)) },
+    Section("Reinicio al apagar", Modifier.fillMaxWidth()) {
+        ToggleRow("Reiniciar al apagar de noche", c.rebootEnabled, { set(c.copy(rebootEnabled = it)) },
             "Con 2 GB de memoria, reiniciar seguido es lo que más se nota.")
         if (c.rebootEnabled) {
-            Text("Frecuencia", color = Palette.textDim, fontSize = 15.sp)
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                Frequency.entries.forEach { f ->
-                    PillButton(f.label, { f.days?.let { set(c.copy(rebootDays = it)) } },
-                        selected = frequencyOf(c.rebootDays) == f)
-                }
-            }
             Text("Días", color = Palette.textDim, fontSize = 15.sp)
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            // Siete botones iguales que ocupan el ancho: con el ✓ no entraban y se cortaban el sábado y el domingo.
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 DAYS.forEach { (day, label) ->
                     val on = day in c.rebootDays
                     PillButton(label, {
                         set(c.copy(rebootDays = if (on) c.rebootDays - day else c.rebootDays + day))
-                    }, selected = on)
+                    }, Modifier.weight(1f), selected = on, check = false, horizontalPadding = 0.dp)
                 }
             }
-            Text("Hora", color = Palette.textDim, fontSize = 15.sp)
-            Row(horizontalArrangement = Arrangement.spacedBy(28.dp)) {
-                Stepper(String.format("%02d h", c.rebootHour),
-                    { set(c.copy(rebootHour = (c.rebootHour + 23) % 24)) },
-                    { set(c.copy(rebootHour = (c.rebootHour + 1) % 24)) })
-                Stepper(String.format("%02d min", c.rebootMinute),
-                    { set(c.copy(rebootMinute = (c.rebootMinute + 55) % 60)) },
-                    { set(c.copy(rebootMinute = (c.rebootMinute + 5) % 60)) })
+            Text("Desde las", color = Palette.textDim, fontSize = 15.sp)
+            fun shift(minutes: Int) {
+                val t = ((c.rebootHour * 60 + c.rebootMinute) / TIME_STEP * TIME_STEP + minutes + 24 * 60) % (24 * 60)
+                set(c.copy(rebootHour = t / 60, rebootMinute = t % 60))
             }
-            Text(
-                if (state.nextReboot > 0) "Próximo reinicio: " + DateTimeFormatter
-                    .ofPattern("EEEE d 'de' MMMM 'a las' HH:mm", Locale("es"))
-                    .format(Instant.ofEpochMilli(state.nextReboot).atZone(ZoneId.systemDefault()))
-                else "Elegí al menos un día.",
-                color = Palette.text, fontSize = 17.sp, fontWeight = FontWeight.SemiBold,
-            )
-            Hint("Si a esa hora estás usando la TV, espera hasta 3 horas a que la apagues. " +
-                "Después del reinicio, si la pantalla se prende sola, la vuelve a apagar.")
+            Stepper(String.format("%02d:%02d", c.rebootHour, c.rebootMinute), { shift(-TIME_STEP) }, { shift(TIME_STEP) })
+            Text("Cuántas veces", color = Palette.textDim, fontSize = 15.sp)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                PillButton("Cada día elegido", { set(c.copy(rebootOncePerWeek = false)) },
+                    Modifier.weight(1f), selected = !c.rebootOncePerWeek, horizontalPadding = 8.dp)
+                PillButton("Una por semana", { set(c.copy(rebootOncePerWeek = true)) },
+                    Modifier.weight(1f), selected = c.rebootOncePerWeek, horizontalPadding = 8.dp)
+            }
+            Text(nextRebootText(state.nextReboot, c), color = Palette.text, fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
+            Hint("Se reinicia en el momento, la primera vez que la apagás después de esa hora (hasta las 6 de la " +
+                "mañana), y queda apagada. De día, apagarla y prenderla no hace nada.")
         }
     }
 }

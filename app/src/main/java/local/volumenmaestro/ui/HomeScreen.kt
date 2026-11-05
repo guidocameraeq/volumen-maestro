@@ -1,5 +1,9 @@
 package local.volumenmaestro.ui
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -17,6 +22,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -57,13 +63,13 @@ fun HomeScreen(state: EngineState, client: EngineClient) {
                         primary = true,
                     )
                 }
-                Hint("Al cambiar de modo se cierra Netflix para que tome el ajuste. Al prender la TV vuelve a quedar encendido.")
+                Hint("Al cambiar de modo se cierra Netflix. Al prender la TV vuelve a quedar encendido.")
             }
+            // La conexión no va acá: ya está en la lista de Estado y con tres datos no entraba.
             Section("Ahora") {
-                Row(horizontalArrangement = Arrangement.spacedBy(28.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(40.dp)) {
                     Fact("Volumen", if (state.muted) "Silencio" else "${state.index} de ${state.max}")
                     Fact("Tema", ThemeRegistry.byId(state.config.themeId).name)
-                    Fact("Conexión", if (state.connected) "Conectada" else if (state.waitingAuth) "Esperando permiso" else "Sin conexión")
                 }
             }
         }
@@ -85,9 +91,18 @@ fun HomeScreen(state: EngineState, client: EngineClient) {
                         client.send(Protocol.REPAIR_ALL) { busy = false }
                     })
                 }
+                // Los renglones toman el foco para que el control pueda bajar hasta los últimos (no entran todos).
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     items(state.health, key = { it.id }) { check ->
-                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 4.dp)) {
+                        val interaction = remember { MutableInteractionSource() }
+                        val focused by interaction.collectIsFocusedAsState()
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .background(if (focused) Palette.surfaceHigh else Color.Transparent, RoundedCornerShape(12.dp))
+                                .focusable(interactionSource = interaction)
+                                .padding(vertical = 4.dp),
+                        ) {
                             StatusDot(Palette.of(check.level))
                             Column(Modifier.weight(1f).padding(start = 14.dp)) {
                                 Text(check.title, color = Palette.text, fontSize = 16.sp, fontWeight = FontWeight.Medium)

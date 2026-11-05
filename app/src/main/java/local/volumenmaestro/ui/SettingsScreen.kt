@@ -98,8 +98,8 @@ fun SettingsScreen(state: EngineState, client: EngineClient) {
                 backupMsg?.let { Text(it, color = Palette.ok, fontSize = 15.sp) }
             }
             Section("Desinstalar") {
-                Hint("Deja la TV como venía (Dolby, salida digital en Auto, volumen al 100 %), cancela el reinicio " +
-                    "programado y apaga el servicio. Después abre el desinstalador de Android.")
+                Hint("Deja la TV como venía (Dolby, salida digital en Auto, volumen al 100 %) " +
+                    "y apaga el servicio. Después abre el desinstalador de Android.")
                 PillButton(if (confirmUninstall) "¿Seguro? Apretá de nuevo" else "Desinstalar limpio", {
                     if (!confirmUninstall) {
                         confirmUninstall = true

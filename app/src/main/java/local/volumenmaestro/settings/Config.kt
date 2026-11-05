@@ -23,10 +23,13 @@ data class Config(
     val shortcutMode: ShortcutMode = ShortcutMode.LONG_PRESS,
     /** TCL Home: un toque abre el panel de apps abiertas, dos vuelven a la app anterior. */
     val appPanel: Boolean = true,
+    /** Reinicio al apagar: en [rebootDays], la primera vez que se apaga la TV desde [rebootHour]:[rebootMinute]. */
     val rebootEnabled: Boolean = false,
-    val rebootDays: Set<DayOfWeek> = setOf(DayOfWeek.MONDAY),
-    val rebootHour: Int = 5,
+    val rebootDays: Set<DayOfWeek> = setOf(DayOfWeek.SUNDAY, DayOfWeek.MONDAY, DayOfWeek.THURSDAY),
+    val rebootHour: Int = 22,
     val rebootMinute: Int = 0,
+    /** true: una sola vez por semana (la primera noche elegida); false: una por cada noche elegida. */
+    val rebootOncePerWeek: Boolean = false,
 ) {
     fun toJson(): String = JSONObject().apply {
         put("version", VERSION)
@@ -44,19 +47,25 @@ data class Config(
         put("rebootDays", JSONArray(rebootDays.sorted().map { it.name }))
         put("rebootHour", rebootHour)
         put("rebootMinute", rebootMinute)
+        put("rebootOncePerWeek", rebootOncePerWeek)
     }.toString()
 
     companion object {
         const val MIN_DB_PER_POINT = 0.2f
         const val MAX_DB_PER_POINT = 1.0f
-        /** 2: shortcutKey pasó de KEYCODE de Android a código crudo del kernel. */
-        const val VERSION = 2
+        /**
+         * 2: shortcutKey pasó de KEYCODE de Android a código crudo del kernel.
+         * 3: el reinicio pasó de alarma a hora fija a "al apagar de noche"; días y hora vuelven al valor por defecto.
+         */
+        const val VERSION = 3
+        private const val VERSION_RAW_SHORTCUT = 2
+        private const val VERSION_REBOOT_AT_POWER_OFF = 3
         private const val ANDROID_KEYCODE_INFO = 165
         private const val RAW_INFO_TCL = 0xC3
 
         /** En la versión 1 el atajo era un KEYCODE de Android; solo Info tiene equivalente conocido. */
         private fun migrateShortcut(version: Int, key: Int): Int = when {
-            version >= VERSION -> key
+            version >= VERSION_RAW_SHORTCUT -> key
             key == ANDROID_KEYCODE_INFO -> RAW_INFO_TCL
             else -> 0
         }
@@ -65,7 +74,10 @@ data class Config(
         fun fromJson(text: String): Config {
             val o = JSONObject(text)
             val d = Config()
-            val days = o.optJSONArray("rebootDays")?.let { arr ->
+            val version = o.optInt("version", 1)
+            // Los días y la hora de antes eran de la alarma (por ejemplo lunes a las 05:00): no sirven como "desde las".
+            val keepRebootTime = version >= VERSION_REBOOT_AT_POWER_OFF
+            val days = o.optJSONArray("rebootDays")?.takeIf { keepRebootTime }?.let { arr ->
                 (0 until arr.length()).mapNotNull { enumOrNull<DayOfWeek>(arr.optString(it)) }.toSet()
             } ?: d.rebootDays
             return Config(
@@ -77,13 +89,14 @@ data class Config(
                 themeId = o.optString("themeId", d.themeId).ifEmpty { d.themeId },
                 overlayDuration = enumOrNull<OverlayDuration>(o.optString("overlayDuration")) ?: d.overlayDuration,
                 showSide = o.optBoolean("showSide", d.showSide),
-                shortcutKey = migrateShortcut(o.optInt("version", 1), o.optInt("shortcutKey", d.shortcutKey)),
+                shortcutKey = migrateShortcut(version, o.optInt("shortcutKey", d.shortcutKey)),
                 shortcutMode = enumOrNull<ShortcutMode>(o.optString("shortcutMode")) ?: d.shortcutMode,
                 appPanel = o.optBoolean("appPanel", d.appPanel),
                 rebootEnabled = o.optBoolean("rebootEnabled", d.rebootEnabled),
                 rebootDays = days,
-                rebootHour = o.optInt("rebootHour", d.rebootHour).coerceIn(0, 23),
-                rebootMinute = o.optInt("rebootMinute", d.rebootMinute).coerceIn(0, 59),
+                rebootHour = if (keepRebootTime) o.optInt("rebootHour", d.rebootHour).coerceIn(0, 23) else d.rebootHour,
+                rebootMinute = if (keepRebootTime) o.optInt("rebootMinute", d.rebootMinute).coerceIn(0, 59) else d.rebootMinute,
+                rebootOncePerWeek = o.optBoolean("rebootOncePerWeek", d.rebootOncePerWeek),
             )
         }
 

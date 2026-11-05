@@ -37,8 +37,13 @@ class Shell(private val keys: () -> KeyPair?, private val onWaitingForUser: () -
 
         @Synchronized
         fun reboot() {
-            val c = client ?: connect().also { client = it }
-            c.reboot()
+            try {
+                (client ?: connect().also { client = it }).reboot()
+            } catch (e: IOException) {
+                // Conexión vieja: una sola vuelta, para no quedarse sin tiempo antes de que la TV se duerma.
+                client?.close()
+                client = connect().also { it.reboot() }
+            }
         }
 
         @Synchronized

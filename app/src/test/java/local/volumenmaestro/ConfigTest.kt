@@ -17,8 +17,20 @@ class ConfigTest {
             themeId = "sable", overlayDuration = OverlayDuration.LONG, showSide = false, shortcutKey = 165,
             shortcutMode = ShortcutMode.SINGLE_PRESS, rebootEnabled = true,
             rebootDays = setOf(DayOfWeek.MONDAY, DayOfWeek.THURSDAY), rebootHour = 4, rebootMinute = 30,
+            rebootOncePerWeek = true,
         )
         assertEquals(c, Config.fromJson(c.toJson()))
+    }
+
+    @Test fun version2RebootTimeGoesToNewDefaults() {
+        // En la v2 el reinicio era una alarma (lunes a las 5); en la v3 es "al apagar desde las 22".
+        val old = """{"version":2,"rebootEnabled":true,"rebootDays":["MONDAY"],"rebootHour":5,"rebootMinute":0,"themeId":"sable"}"""
+        val c = Config.fromJson(old)
+        assertEquals(true, c.rebootEnabled)
+        assertEquals(Config().rebootDays, c.rebootDays)
+        assertEquals(22, c.rebootHour)
+        assertEquals(0, c.rebootMinute)
+        assertEquals("sable", c.themeId)
     }
 
     @Test fun oldOrPartialBackupUsesDefaults() {
