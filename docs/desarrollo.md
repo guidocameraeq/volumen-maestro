@@ -64,4 +64,4 @@ Ojo: `input keyevent` desde la PC **no** pasa por el servicio de accesibilidad: 
 - [ ] Prender la TV con la app apagada → vuelve a ENCENDIDO.
 - [ ] Cada tema: vista previa igual que en pantalla.
 - [ ] Atajo con un botón libre del control.
-- [ ] Reinicio programado de prueba (2 min) con la pantalla apagada.
+- [ ] Reinicio al apagar: con "Desde las" antes de la hora actual y hoy elegido, apagar reinicia y queda apagada; apagar otra vez esa noche, no. La última noche queda guardada: para repetir hay que esperar otro día elegido. En reposo sin red la PC pierde ADB al apagar: para probar solo, `settings put system tcl_sys_network_standby_enabled 1`, y al terminar volver a `0`.

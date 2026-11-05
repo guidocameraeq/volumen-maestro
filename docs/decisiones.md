@@ -18,6 +18,8 @@ Cada decisión con alternativas: qué se eligió, qué se descartó y por qué. 
 | 012 | La clave de firma va en el repo público | 31/10/2026 |
 | 013 | Un ecualizador plano en la mezcla se hace cargo del volumen maestro | 01/11/2026 |
 | 014 | El panel de apps abiertas va adentro de Volumen Maestro, en su propio paquete | 01/11/2026 |
+| 015 | Reposo de la TV en Doze: la tira LED del USB queda apagada; Alexa ya no prende la TV | 05/11/2026 |
+| 016 | Reinicio al apagar de noche, en el momento, en vez de alarma a hora fija (reemplaza a la 009) | 05/11/2026 |
 
 ## ADR-001 — Volumen maestro en vez de efectos de audio
 - **Contexto**: la salida óptica es de volumen fijo; hacía falta una capa de volumen por software.
@@ -57,7 +59,7 @@ Cada decisión con alternativas: qué se eligió, qué se descartó y por qué. 
 ## ADR-008 — Actualizar siempre encima
 - **Elegido**: misma clave (`keystore.jks`, alias `vm`), mismo `applicationId` (`local.volumenmaestro`) y el servicio con el mismo nombre de clase que la v1 (`local.volumenmaestro.VolumeService`). Así la app se actualiza sin perder la clave ADB autorizada, los ajustes ni la habilitación del servicio.
 
-## ADR-009 — Reinicio programado
+## ADR-009 — Reinicio programado (reemplazada por la ADR-016)
 - **Elegido**: alarma exacta (`setExactAndAllowWhileIdle`; el permiso se concede con `appops` por ADB). Solo reinicia con la pantalla apagada (espera hasta 3 h). Reinicia con el servicio `reboot:` de adbd (como `adb reboot`) y deja una marca: si al arrancar la pantalla se prendió sola, manda `KEYCODE_SLEEP`.
 - **Requisito**: reposo en Network Standby (en Hibernated la TV no despierta para la alarma).
 
@@ -88,3 +90,16 @@ Cada decisión con alternativas: qué se eligió, qué se descartó y por qué. 
 - **Opciones**: adentro de Volumen Maestro · una app aparte en este repo · un repo aparte.
 - **Elegido**: adentro, en su propio paquete (`local.volumenmaestro.recientes`) y su propio documento, separado del audio. Reusa el lector del control, la shell ADB y el arranque con la TV.
 - **Costo**: la app deja de ser solo de audio. Separarla después pide otra autorización ADB y duplicar el lector del control. Spec: `docs/specs/2026-11-01-panel-apps.md`.
+
+## ADR-015 — Reposo de la TV en Doze
+- **Contexto**: la tira LED que Guido tiene en el USB de la TV prendía y apagaba con la TV apagada. En Network Standby la placa de Wi-Fi despierta a la TV con el tráfico de la red: 36 despertadas en 10 minutos (registro: `TclPowerManagerServiceEx ... type = WOW`), y cada una prende el USB. Las alarmas de las apps no la despiertan (TCL las pasa a "no despertar").
+- **Opciones**: Network Standby (Alexa prende la TV, la tira titila) · Doze (la tira queda apagada; ni Alexa ni un paquete mágico desde la PC la prenden: probado el 05/11) · Hibernated (igual que Doze, sin mantenimiento) · enchufe inteligente para la tira o cable de red (fuera de la TV; el cable no se probó).
+- **Elegido**: Doze, por Guido. Cortar el USB o elegir qué despierta al Wi-Fi no se puede sin root (sysfs y Wi-Fi bloqueados para la shell).
+- **Costo**: Alexa apaga la TV pero no la prende, y el Chromecast tampoco la prende. La alarma del reinicio programado no despertaba a la TV: de ahí la ADR-016.
+
+## ADR-016 — Reinicio al apagar de noche, en el momento
+- **Contexto**: en reposo sin red nada despierta a la TV, así que una alarma a hora fija no sirve. Guido apaga y prende la TV seguido durante el día y quiere sus apps abiertas.
+- **Opciones**: alarma a hora fija · que la app pregunte una vez por semana · reiniciar cada vez que se apaga · reiniciar la primera vez que se apaga de noche, en los días elegidos.
+- **Elegido**: la última. Por defecto domingo, lunes y jueves desde las 22:00; la noche sigue hasta las 06:00. Una vez por noche, o "una por semana" como opción.
+- **Sin espera**: se planeó esperar 1 minuto por si se apagó sin querer, pero no se puede. TCL suelta los wakelocks de las apps y duerme la TV a ~1,3 s de apretar el botón (`aosp release wakelock` + `powerSuspend`, igual con y sin red), así que la espera nunca corría. El reinicio se manda en el momento. Si no llegara, al despertar la pantalla está prendida y no reinicia: la noche queda sin marcar.
+- **Costo**: apagarla sin querer de noche la reinicia (vuelve en ~30 s). La pantalla se prende durante el arranque, hasta que la app la apaga a los ~15 s de arrancar el motor.

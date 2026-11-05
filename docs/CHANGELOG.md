@@ -2,6 +2,23 @@
 
 > Historia permanente. `/cierre` agrega una entrada AL TOPE en cada sesión. Orden descendente estricto, sin excepciones. Nada de versiones duplicadas en otros docs.
 
+## 2026-11-05 — Volumen Maestro 2.4: reinicio al apagar, y la tira LED en reposo
+
+### Added
+- Reinicio al apagar: en los días elegidos (por defecto domingo, lunes y jueves), la primera vez que se apaga la TV desde la hora elegida (22:00) hasta las 06:00, reinicia en el momento y queda apagada. Opción "Cuántas veces": cada día elegido o una por semana. Spec: `docs/specs/2026-11-05-reinicio-al-apagar.md`, ADR-016.
+
+### Changed
+- En la TV: reposo en **Doze** en vez de Network Standby, para que la tira LED del USB no titile. Alexa ya no prende la TV (ADR-015).
+- El chequeo de reposo de Inicio solo informa: ya no pide Network Standby.
+- La config vieja pasa sola a los días y la hora nuevos (versión 3).
+
+### Fixed
+- Pestaña Optimizar: se cortaban el sábado y el domingo, y los minutos salían aplastados.
+- Inicio: la lista de Estado se recorre con el control, y el dato "Conexión", que se cortaba, se quitó (ya está en esa lista).
+
+### Removed
+- El reinicio a hora fija: la alarma, sus reintentos, `RebootReceiver` y los permisos `SCHEDULE_EXACT_ALARM` y `WAKE_LOCK`.
+
 ## 2026-11-01 — CleanYourTV: comparación y 5 apps de TCL menos
 
 ### Removed

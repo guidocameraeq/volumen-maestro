@@ -81,6 +81,7 @@ Resultado tras reiniciar: **894 MB de RAM libre**.
 - Causa: en reposo la TV entraba en modo **Hibernated** y cortaba el Wi-Fi, así que la orden de prender no llegaba.
 - Arreglo: Settings → System → Power & Energy → TV Standby → **Standby Mode: Network Standby** (`tcl_sys_network_standby_enabled=1`). Ahora Alexa la prende, la apaga, abre Netflix, etc. (comprobado en los registros: llega un "MagicPacket" y la TV despierta).
 - Efecto secundario: mandar algo por Chromecast prende la TV sola. Gasta ~1-2 W más en reposo.
+- **05/11: se volvió a un reposo sin red (Doze)** porque en Network Standby la TV se despertaba con el tráfico del Wi-Fi y la tira LED del USB prendía y apagaba. Desde entonces Alexa apaga la TV pero no la prende. Detalle y opciones en `../decisiones.md` (ADR-015). Para volver: el mismo menú → **Network Standby**.
 
 ### 5. El problema del volumen (lo que dio origen a Volumen Maestro)
 - El Sony va por fibra óptica y TCL deja la salida óptica a **volumen fijo**: los botones de volumen muestran "Audio output through optical fibers does not support volume adjustment".

@@ -45,7 +45,7 @@ Volumen Maestro devuelve el control: los botones de volumen de la TV pasan a man
 - 🔀 **Botón TCL Home como "Alt-Tab"**: un toque abre las apps abiertas (con vista previa), dos toques vuelven a la app anterior. "Limpiar todo" las cierra.
 - 🩺 **Estado tipo semáforo** con "Reparar todo" por si una actualización de la TV desacomoda algo.
 - 🧹 **Optimizar**: libera caché, cierra apps de fondo, muestra memoria, espacio y tiempo encendida.
-- 🔁 **Reinicio programado** por días y hora (espera si estás mirando la TV y la vuelve a apagar después).
+- 🔁 **Reinicio al apagar**: en los días que elijas, la primera vez que apagás la TV desde cierta hora de la noche se reinicia y queda apagada. De día no hace nada.
 - 🎮 **Atajo del control**: un botón que no usás (por ejemplo Info) prende o apaga la app.
 - 💾 **Copia de seguridad** automática y **desinstalación limpia** (deja la TV como venía).
 
@@ -86,7 +86,7 @@ Abrí **Volumen Maestro** desde "Your apps":
 | **Inicio** | Prender/apagar, ver el estado y "Reparar todo" |
 | **Volumen** | Tipo de curva, dB por punto, volumen 0, transición |
 | **Temas** | Elegir el tema (por grupos), probarlo en pantalla, duración y cartel lateral |
-| **Optimizar** | Optimizar ahora, reiniciar, reinicio programado |
+| **Optimizar** | Optimizar ahora, reiniciar, reinicio al apagar |
 | **Ajustes** | Atajo del control, botón TCL Home, copia de seguridad, registro, desinstalar |
 
 ## Compatibilidad

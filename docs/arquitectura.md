@@ -41,7 +41,7 @@ flowchart LR
 | Temas | `overlay/Theme.kt`, `overlay/themes/*` | Interfaz `Theme` + registro. Ver `temas.md` |
 | Ajustes | `settings/Config.kt`, `ConfigStore.kt` | `Config` (JSON), guardado en el proceso motor + copia en `/sdcard/VolumenMaestro/ajustes.json` |
 | Optimizar | `system/Optimizer.kt` | Estado (memoria, espacio, tiempo encendida), `pm trim-caches`, `am kill-all` |
-| Reinicio | `system/RebootScheduler.kt`, `RebootReceiver.kt` | Cálculo del próximo reinicio (probado), alarmas, espera si la TV está en uso |
+| Reinicio | `system/RebootScheduler.kt`, `Engine.onScreenOff` | Regla de la noche y próxima noche (probada); al apagar la TV, el motor reinicia en el momento (ADR-016) |
 | Panel de apps | `recientes/*` | Botón TCL Home: panel de apps abiertas y volver a la anterior. Ver `recientes.md` |
 | Puente | `engine/EngineService.kt`, `engine/Protocol.kt` | Messenger: la interfaz pide, el motor responde con un `Bundle` de estado |
 | Interfaz | `ui/*` | Compose for TV: Inicio, Volumen, Temas, Optimizar, Ajustes. `EngineClient` pregunta el estado cada 1 s |
