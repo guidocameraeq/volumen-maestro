@@ -1,0 +1,12 @@
+# Tanda 3: apps que no se usan (elegido por el duenio: solo YouTube)
+com.netflix.ninja
+com.spotify.tv.android
+com.android.printspooler
+# Reproductores de USB (no se usa USB)
+com.tcl.ui_mediaCenter
+com.tcl.audioplayer
+com.tcl.imageplayer
+com.tcl.videoplayer
+# Actualizaciones de firmware TCL
+com.tcl.versionUpdateApp
+com.tcl.rc.ota

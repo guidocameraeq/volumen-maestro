@@ -1,0 +1,14 @@
+# Tanda 2: filas de contenido, promos, auto-instalaciones y servicios TCL
+com.google.android.tvrecommendations
+com.google.android.leanbacklauncher.recommendations
+com.tcl.partnercustomizer
+com.tcl.partnercustomizer.resource
+com.google.android.leanbacklauncher.partnerwidget
+com.google.android.leanbacklauncher.partnercustomizer
+android.autoinstalls.config.tcl.device
+com.tcl.esticker                        # stickers de demo de tienda
+com.tcl.appmarket2                      # tienda TCL (Play Store queda)
+com.tcl.tvweishi                        # "limpiador"
+com.tcl.usercenter                      # cuenta TCL
+com.tcl.copydatatotv
+com.tcl.useragreement

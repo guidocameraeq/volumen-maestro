@@ -1,0 +1,12 @@
+Ajustes de la TV de la cocina ANTES de tocar nada (15/11/2026).
+Los volcados completos (getprop, settings global/secure/system) estan en .local-privado/tv-cocina/ (fuera del repo: traen numero de serie e IDs).
+
+Inicio (HOME):           com.google.android.tvlauncher/.MainActivity
+Protector de pantalla:   com.google.android.backdrop/.Backdrop (Ambient), activo
+Apagar pantalla:         screen_off_timeout=300000 (5 min)
+Reposo:                  sleep_timeout=14339000
+Teclado:                 com.tcl.inputmethod.international/.T_IME
+Animaciones:             window 1.0 / transition 1.0 / animator sin valor (1.0)
+DNS privado:             sin configurar
+Apps de terceros:        solo Spotify (com.spotify.tv.android)
+Desactivadas de fabrica: ver desactivadas-de-fabrica.txt

@@ -1,0 +1,5 @@
+﻿com.tcl.bootadservice
+com.amazon.amazonvideo.livingroom
+com.google.android.music
+com.google.android.videos
+com.google.android.play.games

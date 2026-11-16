@@ -106,6 +106,7 @@ Abrí **Volumen Maestro** desde "Your apps":
 - [`docs/decisiones.md`](docs/decisiones.md): las decisiones de diseño (ADR).
 - [`docs/specs/`](docs/specs/): las especificaciones aprobadas.
 - [`docs/tv-guido-tcl/`](docs/tv-guido-tcl/): la historia completa de la TV para la que se hizo (limpieza, Alexa, audio) y cómo restaurar lo que se cambió.
+- [`docs/tv-cocina-tcl/`](docs/tv-cocina-tcl/): la TCL 32" de la cocina (Android TV 9), limpiada con CleanYourTV para usar solo YouTube: qué se desactivó, el launcher y cómo restaurarla. No tiene Volumen Maestro.
 
 Stack: Kotlin, Jetpack Compose for TV, Gradle 8.7, minSdk 28 / target 34. Sin librerías de terceros para lo crítico (el cliente ADB es propio).
 

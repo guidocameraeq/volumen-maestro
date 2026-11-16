@@ -76,6 +76,7 @@ Los rituales viven en `.claude/skills/`: **`/inicio` · `/cierre` · `/instalar`
 | `docs/temas.md` | Cómo funciona y cómo se agrega un tema | al cambiar el contrato de temas |
 | `docs/desarrollo.md` | Entorno, compilar, instalar, depurar | al cambiar herramientas |
 | `docs/tv-guido-tcl/` | Historia de la TV, apps quitadas y cómo restaurarlas, respaldos | cada vez que se toca la TV |
+| `docs/tv-cocina-tcl/` | La otra TV: TCL 32" de la cocina (`192.168.0.8`, `UnionTV`), solo YouTube, sin Volumen Maestro. Historia, apps desactivadas, launcher | cada vez que se toca esa TV |
 | `docs/recientes.md` | El panel de apps abiertas (botón TCL Home) | al cambiar el panel |
 | `docs/specs/` | Specs (la v2 y el panel de apps, COMPLETO) | Arquitecto / brainstorming |
 | `docs/ideas-google-tv.md` | Ideas investigadas para mejorar la TV, para elegir | al investigar o al hacer una |

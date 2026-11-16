@@ -1,0 +1,9 @@
+# Tanda 4: extras (el protector de pantalla reloj del launcher reemplaza a Ambient Mode)
+com.google.android.backdrop
+com.google.android.marvin.talkback
+com.android.gallery3d
+com.android.wallpaper.livepicker
+com.android.dreams.basic
+com.tcl.common.terminalmanagerplus
+# Se quedan a proposito: katniss, speech.pumpkin y tts (busqueda por voz), mediashell (Chromecast),
+# com.tcl.tv / tvinput / tvpassthrough / sourcemananger (HDMI), teclados, Play Store y Play Services.

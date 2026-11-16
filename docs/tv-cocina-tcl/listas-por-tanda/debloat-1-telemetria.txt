@@ -1,0 +1,5 @@
+# TCL UnionTV 32" (TCL-LA-RT41KB-S1, Android 9) - tanda 1: telemetria
+# Basado en examples/tcl-uniontv-latin-america del repo Clean Your TV.
+com.tcl.bi                              # analitica TCL
+com.google.android.feedback
+com.google.android.tv.bugreportsender
