@@ -2,6 +2,17 @@
 
 > Historia permanente. `/cierre` agrega una entrada AL TOPE en cada sesión. Orden descendente estricto, sin excepciones. Nada de versiones duplicadas en otros docs.
 
+## 2026-11-15 — La TV de la cocina (TCL 32") limpia, solo YouTube
+
+### Added
+- `docs/tv-cocina-tcl/`: la segunda TV de la casa (TCL UnionTV, Android TV 9, sin Volumen Maestro). Historia, 32 apps desactivadas y cómo restaurarlas, el launcher de CleanYourTV (APK y config) y la bitácora del día.
+
+### Changed
+- En esa TV: inicio de Google reemplazado por el launcher de CleanYourTV, que abre YouTube al prender; animaciones a 0,5× y YouTube recompilado para abrir más rápido.
+
+### Fixed
+- En esa TV: el volumen del control dejó de andar al desactivar `com.tcl.framework.custom` (lleva el volumen al parlante); se reactivó y el launcher se mantiene vivo con su servicio de accesibilidad sin filtrar teclas.
+
 ## 2026-11-05 — Volumen Maestro 2.4: reinicio al apagar, y la tira LED en reposo
 
 ### Added

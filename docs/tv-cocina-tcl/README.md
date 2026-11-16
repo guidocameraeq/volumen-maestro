@@ -79,6 +79,7 @@ Guido eligió: **queda YouTube, Chromecast, búsqueda por voz y HDMI; todo lo de
 - Animaciones del sistema a 0,5× (`window_animation_scale`, `transition_animation_scale`, `animator_duration_scale`; antes 1,0). Para volver: las tres en `1.0`.
 - YouTube recompilado para que abra más rápido: `cmd package compile -m speed -f com.google.android.youtube.tv` (~100 MB más de espacio). Cuando Play Store actualice YouTube, Android vuelve a su compilación normal; se puede repetir el comando.
 - **No se hizo**: DNS con AdGuard (no saca la publicidad de YouTube, que es lo único que se usa acá).
+- **Fondos de pantalla: preparados y descartados.** Se armó un tema del launcher con 6 cuadros de Rob Gonsalves (de `E:\Guido\Fotos & Videos\Banco_Galerias_De_Arte\21_rob_gonsalves\landscape`, los apaisados que llenan la pantalla sin perder el cuadro), recortados a 1280×720, rotando cada 3 minutos con su nombre. Guido decidió dejar el fondo negro y no se cargó. Si algún día se quiere: el tema está en `.local-privado/tv-cocina/tema-gonsalves/` (fuera del repo por derechos de autor) y se sube con `tools\theme.ps1 -TvHost 192.168.0.8 <esa carpeta>` del repo de CleanYourTV.
 
 ### 6. Resultado
 - Al prender con el control abre YouTube solo; con Home se ve el launcher limpio. El volumen anda.
